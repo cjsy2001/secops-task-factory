@@ -1,0 +1,36 @@
+name: factory-ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks (full history)
+        run: docker run --rm -v "$PWD:/repo" -w /repo zricethezav/gitleaks:latest git --redact --no-banner --config .gitleaks.toml
+
+  plane:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tools/stf-mcp/package-lock.json
+      - run: cd tools/stf-mcp && npm ci
+      - run: make test
+      - name: export round-trip is byte-stable
+        run: make roundtrip
+      - name: evidence for every done task still verifies
+        run: node tools/stf-mcp/dist/cli.js verify --dry-run

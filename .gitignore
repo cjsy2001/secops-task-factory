@@ -1,0 +1,28 @@
+# plane cache (the committed record is .stf/export/)
+.stf/*.db*
+.stf/export/*.tmp-*
+
+node_modules/
+dist/
+coverage/
+
+# secrets & local state — never committed
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+id_rsa*
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
+.venv/
+__pycache__/
+.pytest_cache/
+
+# sandbox (spec 003): samples and reports stay local
+projects/malware-sandbox/samples/private/
+projects/malware-sandbox/reports/

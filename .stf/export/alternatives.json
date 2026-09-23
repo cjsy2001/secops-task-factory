@@ -1,0 +1,57 @@
+[
+  {
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "ALT-001",
+    "option": "AWS",
+    "rationale": null,
+    "seq": null,
+    "summary": "boto3/Terraform aws; most common recruiter keyword",
+    "tradeoffs": null,
+    "updated_at": "2026-09-23T18:01:42Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "ALT-002",
+    "option": "Decide per project",
+    "rationale": null,
+    "seq": null,
+    "summary": "cloud-agnostic scaffold, choose at plan time",
+    "tradeoffs": null,
+    "updated_at": "2026-09-23T18:01:42Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "ALT-003",
+    "option": "Files only, no MCP",
+    "rationale": null,
+    "seq": null,
+    "summary": "markdown/JSON + skills; nothing enforces the rules",
+    "tradeoffs": null,
+    "updated_at": "2026-09-23T18:01:42Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "ALT-004",
+    "option": "Docker stack like ai-task-factory",
+    "rationale": null,
+    "seq": null,
+    "summary": "Postgres + API + HTTP MCP; far more to build and run",
+    "tradeoffs": null,
+    "updated_at": "2026-09-23T18:01:42Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "ALT-005",
+    "option": "Public repo now",
+    "rationale": null,
+    "seq": null,
+    "summary": "visible portfolio immediately",
+    "tradeoffs": null,
+    "updated_at": "2026-09-23T18:01:42Z",
+    "verdict": "rejected"
+  }
+]

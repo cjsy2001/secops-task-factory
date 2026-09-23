@@ -1,0 +1,110 @@
+[
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-001",
+    "question": "Should SonarQube (SonarCloud) be used in addition to Semgrep for SAST? It is recruiter-visible, but it adds an external service and is free only for public repos.",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 1,
+    "spec_ref": "Q-001",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-002",
+    "question": "Which registry: ACR (Azure-native, ~$5/mo) or GHCR (free)?",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 1,
+    "spec_ref": "Q-002",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-003",
+    "question": "Should this project's code eventually live in its own public repo for the portfolio, with this factory repo private?",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 1,
+    "spec_ref": "Q-003",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-004",
+    "question": "Should the workload be Minecraft (Java edition, heavier RAM) or a lightweight web server, given the ≤ $15/month budget?",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 2,
+    "spec_ref": "Q-001",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-005",
+    "question": "Should management access use Bastion (≈$140/mo on Basic, over budget), a source-IP-restricted NSG rule, or Tailscale?",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 2,
+    "spec_ref": "Q-002",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-006",
+    "question": "Should monitoring use auditd, Sysmon for Linux or eBPF (Tracee/Falco)? This trades recruiter keyword value against how well each works with containers.",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 3,
+    "spec_ref": "Q-001",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-007",
+    "question": "Local-only, or also an Azure-hosted \"submit via API\" deployment? The latter adds an upload endpoint that needs authentication.",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 3,
+    "spec_ref": "Q-002",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-008",
+    "question": "Does your Entra tenant have a P1/P2 licence (for MFA registration data), or should the MFA rule be designed around the free-tier limits?",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 4,
+    "spec_ref": "Q-001",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "context": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "OQ-009",
+    "question": "Discord, Slack, or both, as the primary alert channel?",
+    "resolution": null,
+    "resolved_by": null,
+    "seq": 4,
+    "spec_ref": "Q-002",
+    "status": "open",
+    "updated_at": "2026-09-23T18:01:42Z"
+  }
+]

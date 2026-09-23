@@ -1,0 +1,66 @@
+[
+  {
+    "artefacts": {
+      "specify": {
+        "specs/001-devsecops-pipeline/spec.md": "e3bd1cba020bdb45be8dcf100c1b14afa50fd4a778e412a0fae786fb335daba0"
+      }
+    },
+    "created_at": "2026-09-23T17:59:57Z",
+    "gate": null,
+    "health": null,
+    "phase": "clarify",
+    "seq": 1,
+    "slug": "devsecops-pipeline",
+    "summary": "A GitHub Actions pipeline that builds, tests and scans a small web API (secrets, SAST, dependencies, container image) and deploys to Azure only when every gate passes.",
+    "title": "Automated DevSecOps CI/CD pipeline with security gates",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "artefacts": {
+      "specify": {
+        "specs/002-hardened-iac/spec.md": "3af8bfe7c5e1ae350d38a11fab0d417741f2c2498b08dc3ac875ae0c92e2f098"
+      }
+    },
+    "created_at": "2026-09-23T17:59:57Z",
+    "gate": null,
+    "health": null,
+    "phase": "clarify",
+    "seq": 2,
+    "slug": "hardened-iac",
+    "summary": "Terraform + Ansible provision and harden a multi-node Minecraft/web server on Azure with key-only SSH, Fail2ban, firewalling, non-root containers, a Cowrie honeypot and automatic instance repair.",
+    "title": "Self-healing hardened server infrastructure as code",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "artefacts": {
+      "specify": {
+        "specs/003-malware-sandbox/spec.md": "fdbf937374eed1466fc8542b41a909525f0a3a2a33c68020b8817d3f08a5d01c"
+      }
+    },
+    "created_at": "2026-09-23T17:59:57Z",
+    "gate": null,
+    "health": null,
+    "phase": "clarify",
+    "seq": 3,
+    "slug": "malware-sandbox",
+    "summary": "An isolated container sandbox that executes a submitted file, captures process, file and network behaviour with auditd, and emits a JSON threat verdict — exercised only with benign samples and simulators.",
+    "title": "Automated malware analysis sandbox",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "artefacts": {
+      "specify": {
+        "specs/004-zero-trust-audit/spec.md": "7ac4828129ccbfe9e447eb589164e95eab9266cb016b13826530eb566fe367e1"
+      }
+    },
+    "created_at": "2026-09-23T17:59:57Z",
+    "gate": null,
+    "health": null,
+    "phase": "clarify",
+    "seq": 4,
+    "slug": "zero-trust-audit",
+    "summary": "A Python tool using the Azure SDK and Microsoft Graph that audits storage exposure, open management ports, MFA coverage and over-privileged identities, and alerts via Discord/Slack webhooks when a non-compliant resource appears.",
+    "title": "Cloud zero-trust secrets and network audit tool",
+    "updated_at": "2026-09-23T18:01:42Z"
+  }
+]

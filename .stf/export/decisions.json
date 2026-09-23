@@ -1,0 +1,52 @@
+[
+  {
+    "consequences": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "D-001",
+    "rationale": "Operator choice at repo bootstrap (2026-09-23).",
+    "rejects": [
+      "ALT-001",
+      "ALT-002"
+    ],
+    "resolves": [],
+    "seq": null,
+    "statement": "All four projects deploy to Azure; CI authenticates with GitHub OIDC federated credentials.",
+    "status": "accepted",
+    "supersedes": [],
+    "title": "Target cloud is Azure for all four projects",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "consequences": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "D-002",
+    "rationale": "Operator choice: zero infra, state travels with git, and the server can still enforce the guards a files-only approach cannot.",
+    "rejects": [
+      "ALT-003",
+      "ALT-004"
+    ],
+    "resolves": [],
+    "seq": null,
+    "statement": "tools/stf-mcp: in-memory SQLite rebuilt from .stf/export/*.json (byte-stable, committed); no server infra.",
+    "status": "accepted",
+    "supersedes": [],
+    "title": "Control plane is a local stdio MCP server over SQLite with a committed JSON export",
+    "updated_at": "2026-09-23T18:01:42Z"
+  },
+  {
+    "consequences": null,
+    "created_at": "2026-09-23T18:01:42Z",
+    "local_id": "D-003",
+    "rationale": "Operator choice at bootstrap; spec 001 Q-003 revisits publishing individual projects publicly.",
+    "rejects": [
+      "ALT-005"
+    ],
+    "resolves": [],
+    "seq": null,
+    "statement": "github.com/cjsy2001/secops-task-factory is private; project code lives under projects/<name>/.",
+    "status": "accepted",
+    "supersedes": [],
+    "title": "One private monorepo: factory + the four projects as specs",
+    "updated_at": "2026-09-23T18:01:42Z"
+  }
+]
