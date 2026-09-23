@@ -1,0 +1,52 @@
+[
+  {
+    "completed_at": "2026-09-23T18:01:42Z",
+    "kind": "lifecycle",
+    "run_key": "lifecycle-001-20260923-1",
+    "seq": 1,
+    "session_id": "2a5d3379-6500-4126-a9cd-94c931afdb9b",
+    "started_at": "2026-09-23T18:01:42Z",
+    "status": "completed",
+    "summary": "specify complete; clarify next (needs operator answers)"
+  },
+  {
+    "completed_at": "2026-09-23T18:01:42Z",
+    "kind": "lifecycle",
+    "run_key": "lifecycle-002-20260923-1",
+    "seq": 2,
+    "session_id": "2a5d3379-6500-4126-a9cd-94c931afdb9b",
+    "started_at": "2026-09-23T18:01:42Z",
+    "status": "completed",
+    "summary": "specify complete; clarify next (needs operator answers)"
+  },
+  {
+    "completed_at": "2026-09-23T18:01:42Z",
+    "kind": "lifecycle",
+    "run_key": "lifecycle-003-20260923-1",
+    "seq": 3,
+    "session_id": "2a5d3379-6500-4126-a9cd-94c931afdb9b",
+    "started_at": "2026-09-23T18:01:42Z",
+    "status": "completed",
+    "summary": "specify complete; clarify next (needs operator answers)"
+  },
+  {
+    "completed_at": "2026-09-23T18:01:42Z",
+    "kind": "lifecycle",
+    "run_key": "lifecycle-004-20260923-1",
+    "seq": 4,
+    "session_id": "2a5d3379-6500-4126-a9cd-94c931afdb9b",
+    "started_at": "2026-09-23T18:01:42Z",
+    "status": "completed",
+    "summary": "specify complete; clarify next (needs operator answers)"
+  },
+  {
+    "completed_at": "2026-09-23T18:01:42Z",
+    "kind": "other",
+    "run_key": "other-x-20260923-1",
+    "seq": null,
+    "session_id": "2a5d3379-6500-4126-a9cd-94c931afdb9b",
+    "started_at": "2026-09-23T18:01:42Z",
+    "status": "completed",
+    "summary": "recorded D-001, D-002, D-003"
+  }
+]

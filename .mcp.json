@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "stf": {
+      "command": "node",
+      "args": ["tools/stf-mcp/dist/index.js"]
+    }
+  }
+}
