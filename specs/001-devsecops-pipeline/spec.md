@@ -68,17 +68,21 @@ Multi-environment promotion (dev/stage/prod), DAST, and signed images with polic
 
 - The app language is Python (FastAPI), unless clarify decides otherwise. It is small, has good Semgrep coverage, and Trivy supports it.
 - The target is Azure Container Apps (consumption) with a basic Azure Container Registry, or GHCR to save cost.
-- The repository is GitHub-hosted (`cjsy2001/secops-task-factory`). CI workflows for this project live under
-  `.github/workflows/devsecops-*.yml` with path filters on `projects/devsecops-pipeline/**`.
-- GitHub code scanning (SARIF upload) is available for this repo. For a **private** repo it requires GitHub
-  Advanced Security. If it is unavailable, reports are uploaded as run artefacts instead.
+- The project lives in its own **public** GitHub repo (`devsecops-pipeline`, per D-004), with the code at the repo root
+  and CI workflows under `.github/workflows/`. The repo name is proposed, not confirmed.
+- GitHub code scanning (SARIF upload) is available because the repo is public. On a private repo it would require
+  GitHub Advanced Security; if it turns out to be unavailable, reports are uploaded as run artefacts instead.
 
 ## Open Questions
 
 - **Q-001** [NEEDS CLARIFICATION: Should SonarQube (SonarCloud) be used in addition to Semgrep for SAST? It is recruiter-visible, but it adds an external service and is free only for public repos.]
 - **Q-002** [NEEDS CLARIFICATION: Which registry: ACR (Azure-native, ~$5/mo) or GHCR (free)?]
-- **Q-003** [NEEDS CLARIFICATION: Should this project's code eventually live in its own public repo for the portfolio, with this factory repo private?]
+- **Q-003** ~~Should this project's code eventually live in its own public repo for the portfolio, with this factory repo private?~~ Resolved; see Clarifications.
 
 ## Clarifications
 
-_(filled by clarify)_
+### Session 2026-09-24
+
+- Q-003: Should this project's code live in its own public repo, with the factory repo private? → A: Yes. Each project
+  gets its own repo, public from the first commit, holding its code, specs and its own stf plane. secops-task-factory
+  stays private and is consumed as a plugin. (source: user; D-004, resolves OQ-003)

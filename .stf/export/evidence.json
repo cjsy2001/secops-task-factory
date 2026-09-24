@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "claim": "The plane can only hash artefacts and check commits inside its own git root, so it has to live in the repo whose code it verifies",
+    "created_at": "2026-09-24T23:41:37Z",
+    "detail": "captureTaskOutcome and checkpoint go through these helpers, so a plane in secops-task-factory cannot record or verify files or commits in another repository.",
+    "evidences": "D-004",
+    "link": null,
+    "local_id": "EV-001",
+    "seq": null,
+    "source": "tools/stf-mcp/src/domain/hash.ts:8-12 (repoRelative throws path_outside_repo), :33 (inGitHistory runs git -C root), :43 (commitExists runs git -C root)"
+  },
+  {
+    "claim": "Migration cost is minimal right now: no tasks, no artefact hashes, no project code",
+    "created_at": "2026-09-24T23:41:38Z",
+    "detail": null,
+    "evidences": "D-004",
+    "link": null,
+    "local_id": "EV-002",
+    "seq": null,
+    "source": "jq length .stf/export/tasks.json .stf/export/artefact-hashes.json → 0, 0; git ls-files projects | wc -l → 0; make status → all four specs at phase=clarify (2026-09-24)"
+  },
+  {
+    "claim": "GitHub code scanning (SARIF upload) on a private repo needs GitHub Advanced Security; a public repo avoids the run-artefact fallback",
+    "created_at": "2026-09-24T23:41:40Z",
+    "detail": "This is recorded as an Assumption in spec 001, not yet verified against GitHub docs. Verify it at spec 001's plan phase and cite the source in research.md.",
+    "evidences": "D-004",
+    "link": null,
+    "local_id": "EV-003",
+    "seq": null,
+    "source": "specs/001-devsecops-pipeline/spec.md:72-74 (Assumptions)"
+  }
+]
