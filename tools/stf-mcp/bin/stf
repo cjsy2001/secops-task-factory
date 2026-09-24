@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# On the Bash tool's PATH while the plugin is enabled: `stf init`, `stf status 1`, `stf verify --dry-run`, …
+exec node "$(dirname "$0")/../scripts/run.mjs" cli "$@"

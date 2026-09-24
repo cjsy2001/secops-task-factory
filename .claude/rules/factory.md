@@ -11,4 +11,6 @@ paths: ["tools/stf-mcp/**", ".stf/**", "specs/**"]
   detected as tampering; an edit elsewhere is simply a lie in git history.
 - Export must stay byte-stable: sorted keys, stable row order, LF, trailing newline. `make roundtrip` proves it.
 - Identity is `seq` (spec) + `localId` (task). IDs like D-/OQ-/ALT-/EV-/MEM-/H- are minted by the server.
-- The tasks.md grammar is strict (see the stf-spec-lifecycle skill). If the parser rejects a line, fix the line rather than loosening the parser.
+- The tasks.md grammar is strict (see the `spec-lifecycle` skill). If the parser rejects a line, fix the line rather than loosening the parser.
+- `tools/stf-mcp` is also the plugin root: only files inside it ship (the plugin cache copies nothing above it). `scripts/run.mjs`
+  must never write to stdout in `mcp` mode, and `recall` must stay silent and install nothing in a repo without `.stf/`.

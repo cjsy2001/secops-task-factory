@@ -1,6 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { describe, expect, it } from "vitest";
+import { StfError } from "../src/errors.js";
 import { buildServer } from "../src/server.js";
 import { allTools } from "../src/tools.js";
 import { factory, tempRepo } from "./helpers.js";
@@ -34,6 +35,21 @@ describe("MCP contract", () => {
     const bad = await client.callTool({ name: "stf_get_spec", arguments: { seq: 42 } });
     expect(bad.isError).toBe(true);
     expect(JSON.stringify(bad.content)).toContain("unknown_spec");
+    await client.close();
+  });
+
+  it("starts without a plane and refuses each call with no_plane (plugin enabled in a repo that has none)", async () => {
+    const server = buildServer(() => {
+      throw new StfError("no_plane", "No .stf/ directory in this project or any parent.");
+    });
+    const [ct, st] = InMemoryTransport.createLinkedPair();
+    await server.connect(st);
+    const client = new Client({ name: "test", version: "0" });
+    await client.connect(ct);
+    expect((await client.listTools()).tools).toHaveLength(EXPECTED.length);
+    const res = await client.callTool({ name: "stf_status", arguments: {} });
+    expect(res.isError).toBe(true);
+    expect(JSON.stringify(res.content)).toContain("no_plane");
     await client.close();
   });
 });

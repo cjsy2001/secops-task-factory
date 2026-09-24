@@ -1,9 +1,9 @@
 ---
-name: stf-implement
+name: implement
 description: Execute a spec's tasks.md phase by phase with TDD, hash-verified outcomes, run tracking and checkpoints in the stf plane, then hand the session off through the plane. Use when the user asks to "implement spec N", "start the build", "resume implementation", "continue spec N", or "do the next task". Requires the spec's lifecycle phase to be done (analyze passed).
 ---
 
-# stf-implement
+# stf:implement
 
 The plane is the source of truth for STATUS. A task is done only when `stf_capture_task_outcome` accepts
 it, which needs an open run, a real output, and artefact files whose sha256 the server records. Everything
@@ -13,7 +13,7 @@ you "remember" from earlier sessions is a claim until a probe confirms it.
 
 1. **Pickup.** `stf_handoff_pickup {seq}` if a handoff is pending. Re-run every probe in its `## Position`
    section, trying the opposite hypothesis as well. If a claim fails, say so and route from the current state instead.
-2. **Gate.** `stf_get_spec {seq}` must show `phase: "done"`. If it doesn't, stop and route to stf-spec-lifecycle, unless the user explicitly overrides.
+2. **Gate.** `stf_get_spec {seq}` must show `phase: "done"`. If it doesn't, stop and route to stf:spec-lifecycle, unless the user explicitly overrides.
 3. **Evidence.** `stf_verify {seq}`. Report its results before starting:
    - any `absent` tasks (these are now blocked and need redoing);
    - `superseded` tasks (information only);
@@ -57,8 +57,8 @@ Never flip `tasks.md` markers by hand. The server mirrors them.
 
 1. `stf_verify {seq}` must come back clean.
 2. `stf_complete_run {runKey, outcome, summary}`.
-3. **stf-handoff emit** for the next session. The route comes from durable state (see stf-handoff), never from memory of the chat.
-4. Offer **stf-memory** for anything durable you learned: lessons, constraints.
+3. **stf:handoff emit** for the next session. The route comes from durable state (see stf:handoff), never from memory of the chat.
+4. Offer **stf:memory** for anything durable you learned: lessons, constraints.
 
 ## Never
 

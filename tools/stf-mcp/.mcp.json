@@ -2,7 +2,7 @@
   "mcpServers": {
     "stf": {
       "command": "node",
-      "args": ["tools/stf-mcp/dist/index.js"]
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/run.mjs", "mcp"]
     }
   }
 }

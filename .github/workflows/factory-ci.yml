@@ -34,3 +34,11 @@ jobs:
         run: make roundtrip
       - name: evidence for every done task still verifies
         run: node tools/stf-mcp/dist/cli.js verify --dry-run
+      - name: plugin launcher builds a runtime from a clean copy (no dist/, no node_modules) and serves recall
+        run: |
+          mkdir -p "$RUNNER_TEMP/plugin" "$RUNNER_TEMP/data"
+          git archive HEAD tools/stf-mcp | tar -x -C "$RUNNER_TEMP/plugin" --strip-components=2
+          out=$(CLAUDE_PLUGIN_ROOT="$RUNNER_TEMP/plugin" CLAUDE_PLUGIN_DATA="$RUNNER_TEMP/data" CLAUDE_PROJECT_DIR="$PWD" \
+            node "$RUNNER_TEMP/plugin/scripts/run.mjs" recall)
+          echo "$out"
+          echo "$out" | grep -q "where this project left off"

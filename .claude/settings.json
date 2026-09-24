@@ -1,37 +1,21 @@
 {
-  "enabledMcpjsonServers": ["stf"],
+  "extraKnownMarketplaces": {
+    "secops-task-factory": {
+      "source": { "source": "github", "repo": "cjsy2001/secops-task-factory" }
+    }
+  },
+  "enabledPlugins": {
+    "stf@secops-task-factory": true
+  },
   "permissions": {
     "allow": [
-      "mcp__stf",
+      "mcp__plugin_stf_stf",
       "Bash(make test)",
       "Bash(make verify)",
       "Bash(make status)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)"
-    ]
-  },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tools/stf-mcp/dist/cli.js\" recall 2>/dev/null || echo 'stf plane not built — run: make setup'"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tasks-md-reminder.mjs\""
-          }
-        ]
-      }
     ]
   }
 }

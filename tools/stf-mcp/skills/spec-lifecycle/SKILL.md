@@ -1,9 +1,9 @@
 ---
-name: stf-spec-lifecycle
+name: spec-lifecycle
 description: Drive a spec through specify → clarify → plan → tasks in ONE session, stop at the session gate, and run the read-only analyze pass in a FRESH session. Use when the user asks to "spec a project", "charter a spec", "clarify spec N", "plan spec N", "generate tasks", "resume the lifecycle", or "analyze spec N". Modes - charter | specify | clarify | plan | tasks | analyze | resume. Every phase completion goes through stf_advance_phase, which hashes the artefacts and enforces order and the gate.
 ---
 
-# stf-spec-lifecycle
+# stf:spec-lifecycle
 
 The spec's CONTENT lives on disk in `specs/NNN-slug/`; its STATE (phase, gate, artefact hashes) lives in the
 plane. You never decide on your own that a phase is done: `stf_advance_phase` does, and it refuses
@@ -13,7 +13,7 @@ run in the session that wrote the tasks.
 ## Phase 0: where are we (always)
 
 1. `stf_status` (or `stf_get_spec {seq}`). Read `phase`: it is the NEXT phase to run.
-2. If a handoff is pending for this spec, run **stf-handoff pickup** first.
+2. If a handoff is pending for this spec, run **stf:handoff pickup** first.
 3. `stf_start_run {seq, kind: "lifecycle"}` (or `"analyze"`). Keep the returned `runKey`: every write needs it.
    If `openPeerRuns` is non-empty, tell the user before you continue.
 
@@ -70,7 +70,7 @@ Then `stf_advance_phase {seq, phase: "specify", runKey, artefacts: ["spec.md"]}`
 - `research.md`: for each technical choice, write Decision / Rationale / Alternatives. Verify library and tool
   facts against their docs. Don't rely on memory; cite a URL or a command output. Record the load-bearing
   choices with `stf_capture_decision`.
-- `plan.md`: architecture (a mermaid diagram), components with their exact paths under `projects/<name>/`,
+- `plan.md`: architecture (a mermaid diagram), components with their exact repo paths (in a project repo the code sits at the root),
   the Azure resources, the security controls, the test strategy, and the phases.
 - Put an `<!-- Source: spec.md#FR-00N -->` trace marker next to each section.
 - Checklist before completing: every FR is covered by a plan section, no entity is invented, and every output
@@ -83,7 +83,7 @@ Grammar (the parser is strict):
 
 ```
 ## Phase 1: Setup
-- [ ] T001 [P] [US1] Verb component in projects/x/path (FR-001, FR-002) {sonnet/medium}
+- [ ] T001 [P] [US1] Verb component in src/x/path (FR-001, FR-002) {sonnet/medium}
   - objective: why this task exists, in one line
   - plan: the concrete steps
   - tests: the exact command that proves it
@@ -103,7 +103,7 @@ Then:
 1. `stf_import_tasks {seq}`. Fix any errors and re-import.
 2. `stf_advance_phase {… phase: "tasks", artefacts: ["tasks.md"]}`. This **sets the session gate**.
 3. `stf_complete_run`.
-4. **stf-handoff emit** with `skill: stf-spec-lifecycle`, `invocation: "/stf-spec-lifecycle analyze N"`, `freshSession: true`.
+4. **stf:handoff emit** with `skill: stf:spec-lifecycle`, `invocation: "/stf:spec-lifecycle analyze N"`, `freshSession: true`.
 5. **STOP.** Tell the user that analyze needs a new session.
 
 ## Phase 5: analyze (fresh session only; read-only on the artefacts)
