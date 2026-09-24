@@ -1,0 +1,7 @@
+{
+  "name": "stf",
+  "description": "secops-task-factory control plane: spec lifecycle with a session gate, evidence-backed task completion, sealed handoffs and cross-session memory, over a local stdio MCP server whose state is a byte-stable JSON export committed with each repo.",
+  "author": { "name": "Jerry Chen" },
+  "repository": "https://github.com/cjsy2001/secops-task-factory",
+  "keywords": ["spec-driven", "task-factory", "evidence", "handoff", "mcp"]
+}

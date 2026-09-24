@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { StfError } from "./errors.js";
 import { Factory } from "./factory.js";
-import { resolveRoot } from "./root.js";
+import { initPlane, resolveRoot } from "./root.js";
 
 const USAGE = `stf <command>
-  recall                  SessionStart block (fail-soft: prints nothing on error)
+  init [dir]              create an empty plane (.stf/export) at a git repo root (default: $CLAUDE_PROJECT_DIR or cwd)
+  recall                  SessionStart block (fail-soft: prints nothing on error, including when there is no plane)
   status [seq]            dashboard JSON
   verify [seq] [--dry-run]
   import-tasks <seq>
@@ -20,6 +21,10 @@ async function main(argv: string[]): Promise<number> {
     } catch {
       /* fail-soft: a broken plane must never block a session from starting */
     }
+    return 0;
+  }
+  if (cmd === "init") {
+    process.stdout.write(JSON.stringify(initPlane(rest[0] ?? process.env.CLAUDE_PROJECT_DIR ?? process.cwd()), null, 2) + "\n");
     return 0;
   }
   const f = new Factory(resolveRoot());

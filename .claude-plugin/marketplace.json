@@ -1,0 +1,12 @@
+{
+  "name": "secops-task-factory",
+  "description": "The stf spec-driven task factory, packaged for the secops portfolio repos.",
+  "owner": { "name": "Jerry Chen" },
+  "plugins": [
+    {
+      "name": "stf",
+      "source": "./tools/stf-mcp",
+      "description": "Spec lifecycle, evidence-backed tasks, sealed handoffs and memory over a local stdio MCP server."
+    }
+  ]
+}

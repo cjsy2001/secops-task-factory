@@ -25,13 +25,13 @@ _Live status: `make status` (the table above is a snapshot)._
 
 - **`tools/stf-mcp/`** is a local MCP server, and the control plane. SQLite runs in memory and is rebuilt from
   `.stf/export/*.json`, a byte-stable export committed with the work. Git history is therefore the audit log.
-- **`.claude/skills/`** are the workflows:
-  - `stf-spec-lifecycle`: specify, clarify, plan, tasks and analyze;
-  - `stf-implement`: TDD, hashed outcomes, checkpoints;
-  - `stf-handoff`: sealed next-session prompts;
-  - `stf-memory`: cross-session memory;
-  - `stf-decide`: decisions, alternatives, evidence;
-  - `stf-status`: where we are and what's next.
+- **The `stf` plugin** (`tools/stf-mcp`, listed in `.claude-plugin/marketplace.json`) bundles the server, the hooks and the workflows:
+  - `/stf:spec-lifecycle`: specify, clarify, plan, tasks and analyze;
+  - `/stf:implement`: TDD, hashed outcomes, checkpoints;
+  - `/stf:handoff`: sealed next-session prompts;
+  - `/stf:memory`: cross-session memory;
+  - `/stf:decide`: decisions, alternatives, evidence;
+  - `/stf:status`: where we are and what's next.
 - **Hooks:**
   - SessionStart injects where the project left off: open questions, spec phases, pending handoff, memories.
   - A PostToolUse hook keeps `tasks.md` and the plane in sync.
@@ -50,9 +50,10 @@ _Live status: `make status` (the table above is a snapshot)._
 
 ```bash
 make setup     # npm ci, build the plane, enable the gitleaks pre-commit hook
-claude         # approve the project MCP server "stf" once; the recall block appears at session start
-/stf-status
-/stf-spec-lifecycle clarify 1
+claude plugin install stf@secops-task-factory --scope project   # once per machine; the repo is private, so gh auth first
+claude         # trust the folder; the recall block appears at session start
+/stf:status
+/stf:spec-lifecycle clarify 1
 ```
 
 Requirements: Node ≥ 20 and Docker (for gitleaks when the binary is missing). Each project's own toolchain
