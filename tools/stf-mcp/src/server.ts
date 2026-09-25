@@ -3,15 +3,16 @@ import { StfError } from "./errors.js";
 import type { Factory } from "./factory.js";
 import { allTools } from "./tools.js";
 
+/** scripts/run.mjs repeats these for the handshake it serves while the runtime builds (tests/launcher.test.ts). */
+export const INSTRUCTIONS =
+  "secops-task-factory control plane. Status lives here, content lives in specs/. Never claim a task is done without " +
+  "stf_capture_task_outcome; never trust a handoff's Position without re-probing; run stf_verify at session start.";
+
 export function buildServer(factory: Factory | (() => Factory)): McpServer {
   const get = typeof factory === "function" ? factory : () => factory;
   const server = new McpServer(
     { name: "stf", version: "0.1.0" },
-    {
-      instructions:
-        "secops-task-factory control plane. Status lives here, content lives in specs/. Never claim a task is done without " +
-        "stf_capture_task_outcome; never trust a handoff's Position without re-probing; run stf_verify at session start.",
-    },
+    { instructions: INSTRUCTIONS },
   );
   for (const tool of allTools) {
     server.registerTool(
