@@ -2,13 +2,19 @@
 import { StfError } from "./errors.js";
 import { writeDashboard } from "./dashboard.js";
 import { Factory } from "./factory.js";
+import { writeHub } from "./hub.js";
+import { pagesHook, refreshPages } from "./pages.js";
 import { initPlane, resolveRoot } from "./root.js";
+import { writeSpecPage } from "./spec-page.js";
 
 const USAGE = `stf <command>
   init [dir]              create an empty plane (.stf/export) at a git repo root (default: $CLAUDE_PROJECT_DIR or cwd)
   recall                  SessionStart block (fail-soft: prints nothing on error, including when there is no plane)
   status [seq]            dashboard JSON
   dashboard [out]         read-only HTML view of the plane (default .stf/dashboard.html, gitignored)
+  spec-page <seq> [out]   one spec's artefacts and decisions as a page (default .stf/spec-page-NNN.html)
+  hub [out]               hub page linking every status page in .stf/pages.json (default .stf/hub.html)
+  pages                   rebuild the dashboard, every spec page and the hub; print what to republish
   verify [seq] [--dry-run]
   import-tasks <seq>
   export                  re-render .stf/export from the loaded state (round-trip check)
@@ -23,6 +29,19 @@ async function main(argv: string[]): Promise<number> {
     } catch {
       /* fail-soft: a broken plane must never block a session from starting */
     }
+    return 0;
+  }
+  if (cmd === "pages" && rest[0] === "--hook") {
+    // the PostToolUse hook (scripts/run.mjs pages-hook): `pages --hook <tool> [seq]`. Answers in hook JSON and never
+    // fails the tool call that fired it: every error becomes a one-line notice.
+    let out: Record<string, unknown>;
+    try {
+      const hookSeq = rest[2] && /^\d+$/.test(rest[2]) ? Number(rest[2]) : undefined;
+      out = pagesHook(new Factory(resolveRoot()), rest[1] ?? "unknown", hookSeq);
+    } catch (e) {
+      out = { suppressOutput: true, systemMessage: `status-pages hook failed: ${String(e instanceof Error ? e.message : e).split("\n")[0]}` };
+    }
+    process.stdout.write(JSON.stringify(out) + "\n");
     return 0;
   }
   if (cmd === "init") {
@@ -40,6 +59,18 @@ async function main(argv: string[]): Promise<number> {
     case "dashboard":
       print(writeDashboard(f, rest[0]));
       return 0;
+    case "spec-page":
+      if (seq === undefined) break;
+      print(writeSpecPage(f, seq, rest.find((r) => r !== seqArg)));
+      return 0;
+    case "hub":
+      print(writeHub(f, rest[0]));
+      return 0;
+    case "pages": {
+      const r = refreshPages(f);
+      process.stdout.write([...r.lines, ...r.errors.map((e) => `FAILED ${e}`)].join("\n") + "\n");
+      return r.errors.length ? 1 : 0;
+    }
     case "verify": {
       const r = f.verify({ seq, apply: !rest.includes("--dry-run") });
       print(r);
