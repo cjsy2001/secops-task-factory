@@ -1,5 +1,5 @@
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
@@ -37,6 +37,12 @@ function fakePlugin(build: string): { root: string; data: string } {
   writeFileSync(join(root, "src", "build.mjs"), build);
   return { root, data: join(base, "data") };
 }
+
+const BUILD_FAST = `
+import { cpSync, mkdirSync } from "node:fs";
+mkdirSync("dist", { recursive: true });
+cpSync("src/server.mjs", "dist/index.js");
+`;
 
 const BUILD_OK = `
 import { cpSync, mkdirSync } from "node:fs";
@@ -119,7 +125,7 @@ describe("launcher: mcp without a ready runtime", () => {
 
     await c.next((m) => m.method === "notifications/tools/list_changed");
     expect((await c.call("tools/list")).result.tools.map((t: { name: string }) => t.name)).toEqual(["stf_fake"]);
-    expect(existsSync(join(plugin.data, "runtime", ".stamp"))).toBe(true);
+    expect(readdirSync(plugin.data).filter((e) => /^runtime-[0-9a-f]{12}$/.test(e))).toHaveLength(1);
   });
 
   it("starts the real server directly once the runtime is built", async () => {
@@ -164,3 +170,55 @@ describe("launcher: mcp without a ready runtime", () => {
     expect(text).toMatch(/build failed: exit 1; see .*build\.log/);
   });
 });
+
+describe("launcher: one runtime per plugin version", () => {
+  const build = (plugin: { root: string; data: string }) =>
+    spawnSync(process.execPath, [join(plugin.root, "scripts", "run.mjs"), "build"], {
+      env: { ...process.env, CLAUDE_PLUGIN_ROOT: plugin.root, CLAUDE_PLUGIN_DATA: plugin.data },
+    });
+  const runtimes = (data: string) => readdirSync(data).filter((e) => /^runtime(-[0-9a-f]{12})?$/.test(e)).sort();
+
+  it("builds two versions that share a data dir side by side, and neither rebuilds the other's", () => {
+    const a = fakePlugin(BUILD_FAST);
+    const b = fakePlugin(BUILD_FAST);
+    writeFileSync(join(b.root, "src", "server.mjs"), FAKE_SERVER + "\n// version b\n");
+    const shared = { a: { ...a, data: a.data }, b: { ...b, data: a.data } };
+    expect(build(shared.a).status).toBe(0);
+    const [ra] = runtimes(a.data);
+    const stampA = readFileSync(join(a.data, ra!, ".stamp"), "utf8");
+    expect(build(shared.b).status).toBe(0);
+    expect(runtimes(a.data)).toHaveLength(2);
+    expect(readFileSync(join(a.data, ra!, ".stamp"), "utf8")).toBe(stampA); // b built its own; a's is untouched
+    const longAgo = new Date(Date.now() - 30 * 86_400_000);
+    utimesSync(join(a.data, ra!, ".last-used"), longAgo, longAgo);
+    const again = build(shared.a); // a's runtime is still ready: no rebuild
+    expect(again.status).toBe(0);
+    expect(again.stderr.toString()).not.toContain("building the stf runtime");
+    // reuse marks it as in use again, so pruning keeps it
+    expect(statSync(join(a.data, ra!, ".last-used")).mtimeMs).toBeGreaterThan(Date.now() - 60_000);
+  });
+
+  it("removes runtimes unused for two weeks after a build, but keeps recent ones", () => {
+    const plugin = fakePlugin(BUILD_FAST);
+    mkdirSync(plugin.data, { recursive: true });
+    const old = new Date(Date.now() - 20 * 86_400_000);
+    for (const dir of ["runtime", "runtime-aaaaaaaaaaaa", "runtime-bbbbbbbbbbbb"]) {
+      mkdirSync(join(plugin.data, dir));
+      writeFileSync(join(plugin.data, dir, ".stamp"), "x");
+    }
+    utimesSync(join(plugin.data, "runtime", ".stamp"), old, old); // the pre-per-version runtime, long unused
+    utimesSync(join(plugin.data, "runtime-aaaaaaaaaaaa", ".stamp"), old, old);
+    writeFileSync(join(plugin.data, "runtime-aaaaaaaaaaaa", ".last-used"), "x");
+    utimesSync(join(plugin.data, "runtime-aaaaaaaaaaaa", ".last-used"), old, old);
+    // runtime-bbbbbbbbbbbb: an old build that a session used recently
+    utimesSync(join(plugin.data, "runtime-bbbbbbbbbbbb", ".stamp"), old, old);
+    writeFileSync(join(plugin.data, "runtime-bbbbbbbbbbbb", ".last-used"), "x");
+    expect(build(plugin).status).toBe(0);
+    const left = runtimes(plugin.data);
+    expect(left).toContain("runtime-bbbbbbbbbbbb");
+    expect(left).not.toContain("runtime");
+    expect(left).not.toContain("runtime-aaaaaaaaaaaa");
+    expect(left).toHaveLength(2);
+  });
+});
+

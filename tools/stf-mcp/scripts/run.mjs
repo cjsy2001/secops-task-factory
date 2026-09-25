@@ -10,8 +10,10 @@
 // A plugin is installed from git, so dist/ and node_modules/ (gitignored; better-sqlite3 is native) are absent.
 // Runtime resolution:
 //   1. in place: the plugin dir already has dist/ and node_modules/ (`make dev`, i.e. claude --plugin-dir) → use it;
-//   2. otherwise: build a private copy in ${CLAUDE_PLUGIN_DATA}/runtime (npm ci → build → prune), keyed by a hash
-//      of the sources, so it is rebuilt exactly when the plugin update changes them.
+//   2. otherwise: build a private copy in ${CLAUDE_PLUGIN_DATA}/runtime-<hash> (npm ci → build → prune), where <hash> is
+//      a hash of the sources. Each plugin version gets its own runtime, so two repos pinned to different stf versions
+//      never rebuild each other's (they share one data dir). A runtime unused for RUNTIME_KEEP_DAYS is removed after
+//      the next successful build.
 // The build takes longer than Claude Code's MCP startup timeout (30s by default), so `mcp` never builds inline: without
 // a ready runtime it answers the handshake itself with no tools, builds in a detached child, then hands the connection
 // to the real server and sends notifications/tools/list_changed so the client fetches the real tool list.
@@ -27,6 +29,7 @@ const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || dirname(dirname(fileURLToPa
 const [mode = "cli", ...rest] = process.argv.slice(2);
 const SOURCES = ["package.json", "package-lock.json", "tsconfig.json", "src"];
 const LOCK_STALE_MS = 10 * 60_000;
+const RUNTIME_KEEP_DAYS = 14;
 const log = (m) => process.stderr.write(`stf: ${m}\n`);
 
 function files(p, out = []) {
@@ -128,22 +131,67 @@ function dataDir() {
 function runtimeState() {
   const data = dataDir();
   if (!data) throw new Error("no local build and no plugin data directory: run `make build` in tools/stf-mcp, or start this through Claude Code");
-  const runtime = join(data, "runtime");
-  const stampFile = join(runtime, ".stamp");
   const want = stampOf(pluginRoot);
+  const runtime = join(data, `runtime-${want.slice(0, 12)}`);
+  const stampFile = join(runtime, ".stamp");
   const ready = () => existsSync(stampFile) && readFileSync(stampFile, "utf8") === want;
   return { data, runtime, want, ready };
 }
 
+/** Record that a runtime is in use, so pruning never removes one a session started recently. */
+function touch(runtime) {
+  try {
+    writeFileSync(join(runtime, ".last-used"), new Date().toISOString());
+  } catch {
+    // best effort: a read-only data dir must not stop the plugin
+  }
+}
+
+function lastUsed(dir) {
+  for (const f of [".last-used", ".stamp"]) {
+    try {
+      return statSync(join(dir, f)).mtimeMs;
+    } catch {
+      // try the next marker
+    }
+  }
+  return statSync(dir).mtimeMs;
+}
+
+/**
+ * Remove runtimes of other plugin versions that no session has used for RUNTIME_KEEP_DAYS, including the pre-per-version
+ * `runtime/`. Called with the install lock held; a runtime in use by a running session was touched when it started.
+ */
+function pruneRuntimes(data, keep) {
+  const cutoff = Date.now() - RUNTIME_KEEP_DAYS * 86_400_000;
+  for (const e of readdirSync(data)) {
+    if (!/^runtime(-[0-9a-f]{12})?$/.test(e) || join(data, e) === keep) continue;
+    try {
+      if (lastUsed(join(data, e)) < cutoff) {
+        rmSync(join(data, e), { recursive: true, force: true });
+        log(`removed ${e} (unused for ${RUNTIME_KEEP_DAYS} days)`);
+      }
+    } catch {
+      // gone already, or unreadable: leave it
+    }
+  }
+}
+
 function ensureRuntime() {
   const { data, runtime, want, ready } = runtimeState();
-  if (ready()) return runtime;
+  if (ready()) {
+    touch(runtime);
+    return runtime;
+  }
 
   mkdirSync(data, { recursive: true });
   const lock = join(data, ".install-lock");
   acquire(lock);
   try {
-    if (ready()) return runtime; // another process finished while we waited
+    if (ready()) {
+      touch(runtime);
+      return runtime; // another process finished while we waited
+    }
     // Holding the lock means no build is running, so any tmp dir is left over from a killed one.
     for (const e of readdirSync(data)) if (e.startsWith("runtime.tmp-")) rmSync(join(data, e), { recursive: true, force: true });
     const tmp = join(data, `runtime.tmp-${process.pid}`);
@@ -157,7 +205,9 @@ function ensureRuntime() {
     writeFileSync(join(tmp, ".stamp"), want);
     rmSync(runtime, { recursive: true, force: true });
     renameSync(tmp, runtime);
+    touch(runtime);
     log(`runtime ready in ${runtime}`);
+    pruneRuntimes(data, runtime);
     return runtime;
   } finally {
     rmSync(lock, { recursive: true, force: true });
@@ -283,7 +333,10 @@ try {
     if (!state.ready()) {
       mkdirSync(state.data, { recursive: true });
       bootstrapMcp(state.data, state.runtime);
-    } else runtime = state.runtime;
+    } else {
+      runtime = state.runtime;
+      touch(runtime);
+    }
   } else runtime = ensureRuntime();
 } catch (e) {
   const msg = String(e?.message ?? e).split("\n")[0];
