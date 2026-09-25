@@ -44,16 +44,22 @@ export function dashboardData(f: Factory, now: () => string = () => new Date().t
 
 export type DashboardData = ReturnType<typeof dashboardData>;
 
-/** One self-contained HTML page. The data sits in a JSON script block with every "<" escaped, so plane text can't close it. */
+const escHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * One self-contained HTML page, titled per repo ("STF · <repo> dashboard") so status pages group in the artifact gallery.
+ * The data sits in a JSON script block with every "<" escaped, so plane text can't close it.
+ */
 export function renderDashboard(data: DashboardData): string {
   const blob = JSON.stringify(data).replace(/</g, "\\u003c");
-  return readFileSync(TEMPLATE_PATH, "utf8").replace("/*__DATA__*/", () => blob);
+  return readFileSync(TEMPLATE_PATH, "utf8")
+    .replace("/*__REPO__*/", () => escHtml(data.repo))
+    .replace("/*__DATA__*/", () => blob);
 }
 
 /** Write the page (default .stf/dashboard.html, which is gitignored) and say where it went. */
-export function writeDashboard(f: Factory, out?: string): { out: string; specs: number; tasks: number } {
+export function writeDashboard(f: Factory, out?: string, data: DashboardData = dashboardData(f)): { out: string; specs: number; tasks: number } {
   const path = resolve(out ?? join(f.root, ".stf", "dashboard.html"));
-  const data = dashboardData(f);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, renderDashboard(data));
   return { out: path, specs: data.specs.length, tasks: data.tasks.length };
