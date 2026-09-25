@@ -4,6 +4,8 @@
 //   run.mjs recall         the SessionStart block; silent in a project without a plane, never fails the session
 //   run.mjs cli <args…>    any cli.js verb (init, status, verify, …)
 //   run.mjs build          build the runtime and exit (the mcp bootstrap runs this in the background)
+//   run.mjs pages-hook     PostToolUse after an stf plane write: rebuild the status pages; silent (and builds nothing)
+//                          unless the project has both .stf/export/specs.json and .stf/pages.json
 //
 // A plugin is installed from git, so dist/ and node_modules/ (gitignored; better-sqlite3 is native) are absent.
 // Runtime resolution:
@@ -39,16 +41,37 @@ function stampOf(root) {
   return h.digest("hex");
 }
 
-/** Mirrors root.ts findRoot, so recall can stay silent (and install nothing) where there is no plane. */
-function hasPlane() {
-  if (process.env.STF_ROOT) return true;
+/** Mirrors root.ts findRoot, so recall and the pages hook can stay silent (and install nothing) where there is no plane. */
+function planeRoot() {
+  if (process.env.STF_ROOT) return resolve(process.env.STF_ROOT);
   let dir = resolve(process.env.CLAUDE_PROJECT_DIR || process.cwd());
   for (;;) {
-    if (existsSync(join(dir, ".stf"))) return true;
+    if (existsSync(join(dir, ".stf"))) return dir;
     const up = dirname(dir);
-    if (up === dir) return false;
+    if (up === dir) return null;
     dir = up;
   }
+}
+
+const TOOL_PREFIX = "mcp__plugin_stf_stf__";
+
+/**
+ * The pages hook's event → cli args (`pages --hook <tool> [seq]`), or null for a silent no-op. Plugin hooks fire in
+ * every project that enables the plugin, so a project without a plane export and a .stf/pages.json is left alone.
+ */
+function pagesHookArgs() {
+  let event;
+  try {
+    event = JSON.parse(readFileSync(0, "utf8"));
+  } catch {
+    return null;
+  }
+  const tool = String(event?.tool_name ?? "");
+  const root = planeRoot();
+  if (!root || !tool.startsWith(TOOL_PREFIX)) return null;
+  if (!existsSync(join(root, ".stf", "export", "specs.json")) || !existsSync(join(root, ".stf", "pages.json"))) return null;
+  const seq = event.tool_input?.seq;
+  return ["pages", "--hook", tool.slice(TOOL_PREFIX.length), ...(Number.isInteger(seq) ? [String(seq)] : [])];
 }
 
 function sleep(ms) {
@@ -244,7 +267,12 @@ function bootstrapMcp(data, runtime) {
   });
 }
 
-if (mode === "recall" && !hasPlane()) process.exit(0);
+if (mode === "recall" && !planeRoot()) process.exit(0);
+if (mode === "pages-hook") {
+  const args = pagesHookArgs();
+  if (!args) process.exit(0);
+  rest.splice(0, rest.length, ...args);
+}
 
 let runtime;
 try {
@@ -262,6 +290,11 @@ try {
   if (mode === "recall") {
     // Fail soft: a broken plane must never block a session from starting. This line becomes session context.
     process.stdout.write(`stf plane unavailable: ${msg}\n`);
+    process.exit(0);
+  }
+  if (mode === "pages-hook") {
+    // never fail the tool call that fired the hook: say it in one line instead
+    process.stdout.write(`${JSON.stringify({ suppressOutput: true, systemMessage: `status-pages hook failed: ${msg}` })}\n`);
     process.exit(0);
   }
   log(msg);
