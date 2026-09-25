@@ -69,6 +69,21 @@ export const allTools: ToolDef[] = [
     input: { seq, phase: z.enum(LIFECYCLE_PHASES), reason: z.string().min(10), runKey },
     run: (f, a) => f.reopenPhase(a),
   },
+  {
+    name: "stf_move_spec",
+    group: "spec",
+    description:
+      "Mark a spec as moved to another repo's plane (e.g. per D-004). Keeps its questions, decisions, events and evidence here; afterwards every " +
+      "lifecycle, task, run, capture and handoff write on it is refused, and status/recall/pages show \"moved → <repo>\". Refused while a run on it is open.",
+    input: {
+      seq,
+      repo: z.string().describe("GitHub owner/name it moved to, e.g. cjsy2001/devsecops-pipeline"),
+      targetSeq: z.number().int().positive().describe("The spec's seq in that repo's plane"),
+      decision: z.string().regex(/^D-\d{3,}$/).describe("The decision that moved it, e.g. D-004"),
+      reason: z.string().min(10),
+    },
+    run: (f, a) => f.moveSpec(a),
+  },
 
   // ── tasks
   {

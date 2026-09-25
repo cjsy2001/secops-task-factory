@@ -48,5 +48,15 @@
     "started_at": "2026-09-23T18:01:42Z",
     "status": "completed",
     "summary": "recorded D-001, D-002, D-003"
+  },
+  {
+    "completed_at": "2026-09-25T16:59:12Z",
+    "kind": "lifecycle",
+    "run_key": "lifecycle-001-20260925-1",
+    "seq": 1,
+    "session_id": "a2497d2c-68c7-449f-ab5f-c1022d2c74ef",
+    "started_at": "2026-09-25T16:58:26Z",
+    "status": "failed",
+    "summary": "Stopped before clarify: per D-004 spec 001 moves to its own public repo first; nothing written."
   }
 ]

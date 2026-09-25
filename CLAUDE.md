@@ -88,7 +88,7 @@ make plugin-validate  # claude plugin validate on the plugin and the marketplace
 
 ## Specs
 
-- 001 `devsecops-pipeline`: CI/CD with secret, SAST and dependency gates → Azure.
+- 001 `devsecops-pipeline`: CI/CD with secret, SAST and dependency gates → Azure. **Moved** to `cjsy2001/devsecops-pipeline` (D-004); the records here are history.
 - 002 `hardened-iac`: Terraform + Ansible hardened, self-healing Minecraft/web server with a honeypot.
 - 003 `malware-sandbox`: an isolated behavioural-analysis sandbox with JSON verdicts. **Benign samples only.**
 - 004 `zero-trust-audit`: an Azure misconfiguration and identity auditor with webhook alerts.
