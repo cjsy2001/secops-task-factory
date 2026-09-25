@@ -53,5 +53,71 @@
     "tradeoffs": null,
     "updated_at": "2026-09-23T18:01:42Z",
     "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-24T23:41:00Z",
+    "local_id": "ALT-006",
+    "option": "One public repo per project, each with its own plane; factory repo private and packaged as a plugin",
+    "rationale": "The only split that keeps stf's evidence checks working, and it answers the portfolio-visibility question in OQ-003.",
+    "seq": null,
+    "summary": "Each of devsecops-pipeline, hardened-iac, malware-sandbox and zero-trust-audit gets its own GitHub repo, public from the first commit, holding the code, specs/, .stf/export/ and project rules. secops-task-factory stays private and ships tools/stf-mcp, skills and hooks as a Claude Code plugin.",
+    "tradeoffs": "Pro: public history per project; evidence stays verifiable because the code and the plane that hashes it share one git root; GitHub-to-Azure OIDC trust is scoped to one repo. Con: five setups; no shared recall or memory across projects; plugin versions to keep in step; spec numbering restarts per repo unless charter takes an explicit seq.",
+    "updated_at": "2026-09-24T23:41:00Z",
+    "verdict": "chosen"
+  },
+  {
+    "created_at": "2026-09-24T23:41:02Z",
+    "local_id": "ALT-007",
+    "option": "Keep one private monorepo (factory + projects under projects/)",
+    "rationale": "The portfolio goal needs projects that are visible, and splitting later would break recorded evidence.",
+    "seq": null,
+    "summary": "The status quo from D-003: everything lives in the private secops-task-factory repo.",
+    "tradeoffs": "Pro: one setup, one recall block across all four specs, shared memory, nothing to migrate. Con: recruiters can't see any project; GitHub code scanning on a private repo needs GitHub Advanced Security (spec 001 Assumptions); CI and OIDC trust span every project.",
+    "updated_at": "2026-09-24T23:41:21Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-24T23:41:05Z",
+    "local_id": "ALT-008",
+    "option": "Central factory repo whose plane tracks code in external project repos",
+    "rationale": "It defeats the evidence guarantees the factory exists for, unless stf gains multi-root support, which is out of scope.",
+    "seq": null,
+    "summary": "Keep specs/ and .stf/export/ in secops-task-factory, and put only the code in per-project repos.",
+    "tradeoffs": "Pro: one recall block and one memory. Con: the server refuses artefact paths outside its repo root (repoRelative), and checks commits and history only in its own repo (commitExists, inGitHistory). Outcome capture and checkpoints would be refused, and verify would report absent.",
+    "updated_at": "2026-09-24T23:41:21Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-24T23:41:08Z",
+    "local_id": "ALT-009",
+    "option": "Build in the private monorepo, then mirror each project to a public repo at milestones",
+    "rationale": "The public copy would lose exactly the verifiable evidence that makes it worth showing.",
+    "seq": null,
+    "summary": "Periodic git subtree split or filter-repo of projects/<name> into a public repo.",
+    "tradeoffs": "Pro: work in progress stays hidden, with a single workspace. Con: extraction rewrites commit shas and moves paths, so the public copy can't verify any recorded checkpoint or artefact hash; two histories drift apart.",
+    "updated_at": "2026-09-24T23:41:21Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-24T23:41:09Z",
+    "local_id": "ALT-010",
+    "option": "Project repos private until their spec is done, then public",
+    "rationale": "Operator chose public from creation (2026-09-24).",
+    "seq": null,
+    "summary": "Split now, but only flip visibility once each project is complete.",
+    "tradeoffs": "Pro: unfinished work stays hidden. Con: code scanning needs GitHub Advanced Security or the run-artefact fallback while the repo is private; no visible progress for recruiters.",
+    "updated_at": "2026-09-24T23:41:21Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-24T23:41:11Z",
+    "local_id": "ALT-011",
+    "option": "Make the factory repo public as well",
+    "rationale": "Operator chose to keep the factory private (2026-09-24). This can be revisited after the roadmap's P0 items land.",
+    "seq": null,
+    "summary": "Show secops-task-factory itself as a portfolio piece.",
+    "tradeoffs": "Pro: shows the method as well as the projects. Con: reviewers would probe the known trust gaps (session gate bound to the process, self-reported analyze score) before they are closed.",
+    "updated_at": "2026-09-24T23:41:21Z",
+    "verdict": "rejected"
   }
 ]

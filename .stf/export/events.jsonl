@@ -28,3 +28,4 @@
 {"at":"2026-09-23T18:01:42Z","id":28,"kind":"question","run_key":null,"seq":4,"session_id":"2a5d3379-6500-4126-a9cd-94c931afdb9b","summary":"OQ-009 opened: Discord, Slack, or both, as the primary alert channel?"}
 {"at":"2026-09-23T18:01:42Z","id":29,"kind":"lifecycle","run_key":"lifecycle-004-20260923-1","seq":4,"session_id":"2a5d3379-6500-4126-a9cd-94c931afdb9b","summary":"specify complete → next: clarify"}
 {"at":"2026-09-23T18:01:42Z","id":30,"kind":"run","run_key":"lifecycle-004-20260923-1","seq":4,"session_id":"2a5d3379-6500-4126-a9cd-94c931afdb9b","summary":"run completed: lifecycle-004-20260923-1 — specify complete; clarify next (needs operator answers)"}
+{"at":"2026-09-24T23:41:21Z","id":31,"kind":"decision","run_key":null,"seq":null,"session_id":"983e5fe9-1998-434f-9788-95c5d45b9d0b","summary":"D-004: One public repo per project; the factory stays private as a plugin (resolves OQ-003)"}

@@ -44,9 +44,33 @@
     "resolves": [],
     "seq": null,
     "statement": "github.com/cjsy2001/secops-task-factory is private; project code lives under projects/<name>/.",
-    "status": "accepted",
+    "status": "superseded",
     "supersedes": [],
     "title": "One private monorepo: factory + the four projects as specs",
-    "updated_at": "2026-09-23T18:01:42Z"
+    "updated_at": "2026-09-24T23:41:21Z"
+  },
+  {
+    "consequences": "Next steps: (2) package the factory as a plugin; (3) add an optional explicit seq to stf_charter_spec so specs keep 001-004; (4) re-charter each spec in its new repo and re-capture its questions and decisions (their IDs will be reissued). D-001 (Azure) and D-002 (plane design) stay factory-wide. Until the move, CLAUDE.md, README, .claude/rules path globs (projects/**) and spec Assumptions that name secops-task-factory or projects/<name> are stale, and must be updated when each spec moves. Recall and memory are no longer shared across projects. Every public repo needs gitleaks (pre-commit hook and CI) active from its first commit.",
+    "created_at": "2026-09-24T23:41:21Z",
+    "local_id": "D-004",
+    "rationale": "stf's evidence checks only work inside a single git root: repoRelative refuses paths outside the root, and commitExists/inGitHistory run git in the plane's own repo. The plane therefore has to live with the code it verifies. Public project repos give recruiters visible history, and GitHub code scanning is free for public repos (spec 001 Assumptions). This is the cheapest moment to move: every spec is at clarify, with 0 tasks, 0 artefact hashes and no projects/ folder. After implementation starts, extraction would rewrite recorded commit shas and move artefact paths.",
+    "rejects": [
+      "ALT-007",
+      "ALT-008",
+      "ALT-009",
+      "ALT-010",
+      "ALT-011"
+    ],
+    "resolves": [
+      "OQ-003"
+    ],
+    "seq": null,
+    "statement": "Each project (devsecops-pipeline, hardened-iac, malware-sandbox, zero-trust-audit) moves to its own GitHub repo, public from the first commit. Each repo holds its code at the root, its specs/, its own .stf/export/ plane and its project rules. github.com/cjsy2001/secops-task-factory stays private and holds the stf MCP server, skills, hooks and rule templates, packaged as a Claude Code plugin, plus a plane for factory-level work.",
+    "status": "accepted",
+    "supersedes": [
+      "D-003"
+    ],
+    "title": "One public repo per project; the factory stays private as a plugin",
+    "updated_at": "2026-09-24T23:41:21Z"
   }
 ]

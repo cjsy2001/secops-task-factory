@@ -3,7 +3,8 @@ import { StfError } from "./errors.js";
 import type { Factory } from "./factory.js";
 import { allTools } from "./tools.js";
 
-export function buildServer(factory: Factory): McpServer {
+export function buildServer(factory: Factory | (() => Factory)): McpServer {
+  const get = typeof factory === "function" ? factory : () => factory;
   const server = new McpServer(
     { name: "stf", version: "0.1.0" },
     {
@@ -18,7 +19,7 @@ export function buildServer(factory: Factory): McpServer {
       { description: tool.description, inputSchema: tool.input, annotations: { readOnlyHint: !!tool.readOnly } },
       async (args: unknown) => {
         try {
-          const result = tool.run(factory, args ?? {});
+          const result = tool.run(get(), args ?? {});
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
         } catch (err) {
           const body =
