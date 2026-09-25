@@ -14,5 +14,8 @@ description: Read-only "where are we / what's next" across all specs or for one 
    - open questions;
    - the single recommended next step, with its invocation (use the stf:handoff routing table).
 
+If the user wants to see it rather than read it, run `stf dashboard` (Bash tool; it only reads the plane) and give them the
+path it prints (`.stf/dashboard.html`, gitignored) to open in a browser.
+
 Every claim you report carries the probe it came from. If the plane and disk disagree, say so and cite
 both. Never smooth over a divergence. Don't write anything; for fixes, point at the skill that owns them.

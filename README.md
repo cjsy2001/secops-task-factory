@@ -10,7 +10,7 @@ AI-assisted development honest: every claim of "done" must carry verifiable evid
 | 003 | [Malware analysis sandbox](specs/003-malware-sandbox/spec.md) | Docker isolation · Python · auditd/eBPF · YARA · JSON verdicts (benign samples only) | spec: clarify |
 | 004 | [Zero-trust cloud audit tool](specs/004-zero-trust-audit/spec.md) | Python · Azure SDK · Microsoft Graph · Event Grid · Functions · webhooks | spec: clarify |
 
-_Live status: `make status` (the table above is a snapshot)._
+_Live status: `make status` (JSON) or `make dashboard` (an HTML page in `.stf/dashboard.html`); the table above is a snapshot._
 
 ## How the factory works
 
