@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STF Plane Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --sunk:#E8ECF0; --ink:#15202B; --muted:#56636F; --rule:#D3DAE1;
+  --accent:#2B55C9; --accent-soft:#E3EAFB; --gate:#9A6412; --gate-soft:#F8EEDC;
+  --ok:#1D7348; --ok-soft:#E0F1E7; --bad:#B0281C; --bad-soft:#F9E3E0; --idle:#8A96A3;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0E1319; --surface:#151C24; --sunk:#1C252F; --ink:#E4E9EE; --muted:#96A3B0; --rule:#2B3542;
+    --accent:#86A2FF; --accent-soft:#1D2944; --gate:#E2AD55; --gate-soft:#33291A;
+    --ok:#5CC98E; --ok-soft:#17301F; --bad:#F08A7E; --bad-soft:#3A1D1A; --idle:#6B7885;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0E1319; --surface:#151C24; --sunk:#1C252F; --ink:#E4E9EE; --muted:#96A3B0; --rule:#2B3542;
+  --accent:#86A2FF; --accent-soft:#1D2944; --gate:#E2AD55; --gate-soft:#33291A;
+  --ok:#5CC98E; --ok-soft:#17301F; --bad:#F08A7E; --bad-soft:#3A1D1A; --idle:#6B7885;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px}
+.page{max-width:1180px;margin:0 auto}
+header{padding-block:32px 20px;border-bottom:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,4vw,36px);font-weight:700;margin-top:6px}
+h2{font-size:19px;font-weight:600}
+.snap{font-family:var(--mono);font-size:12.5px;color:var(--muted);display:grid;gap:2px;text-align:right}
+.snap b{color:var(--ink);font-weight:500}
+.stale{color:var(--gate)}
+code{font-family:var(--mono);font-size:.88em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-block:20px}
+.stat{background:var(--surface);padding:14px 16px;display:grid;gap:2px}
+.stat .n{font-family:var(--display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--muted)}
+.stat.warn .n{color:var(--gate)} .stat.bad .n{color:var(--bad)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;align-items:center}
+.filters span{font-size:13px;color:var(--muted);margin-right:4px}
+.chip{font-family:var(--mono);font-size:12.5px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section{margin-block:28px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+.sec-head .hint{font-size:13px;color:var(--muted)}
+.specs{display:grid;gap:10px}
+.spec{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.spec{grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) minmax(0,.9fr);align-items:center}}
+.spec .id{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.spec .t{font-weight:600;margin-top:2px}
+.spec .slug{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+.track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.step{display:grid;gap:4px;font-size:11.5px;color:var(--muted);text-align:center}
+.step i{display:block;height:6px;border-radius:3px;background:var(--sunk)}
+.step.past i{background:var(--ok)} .step.cur i{background:var(--accent)} .step.cur{color:var(--ink);font-weight:600}
+.step.gated i{background:var(--gate)}
+.meta{display:grid;gap:4px;font-size:13px}
+.meta div{display:flex;justify-content:space-between;gap:8px}
+.meta .k{color:var(--muted)}
+.bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--sunk);margin-top:2px}
+.bar span{display:block}
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.s-pending{color:var(--idle)} .s-in_progress{color:var(--accent)} .s-blocked{color:var(--bad)} .s-done{color:var(--ok)} .s-cancelled{color:var(--idle);text-decoration:line-through}
+.s-open{color:var(--gate)} .s-resolved,.s-accepted,.s-completed,.s-picked_up{color:var(--ok)} .s-failed{color:var(--bad)} .s-sent{color:var(--accent)} .s-superseded,.s-archived,.s-rejected{color:var(--idle)}
+.grid2{display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:8px 12px;border-bottom:1px solid var(--rule)}
+th{font-family:var(--display);font-weight:600;font-size:12.5px;background:var(--sunk);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.mono,.mono{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+tr.phase td{background:var(--sunk);font-family:var(--mono);font-size:12px;color:var(--muted)}
+.empty{background:var(--surface);border:1px dashed var(--rule);border-radius:8px;padding:16px;color:var(--muted);font-size:14px}
+.list{background:var(--surface);border:1px solid var(--rule);border-radius:8px}
+.item{padding:10px 14px;border-bottom:1px solid var(--rule);display:grid;gap:4px}
+.item:last-child{border-bottom:0}
+.item .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.item .sub{font-size:13px;color:var(--muted)}
+.feed .item{grid-template-columns:130px minmax(0,1fr);gap:4px 12px}
+@media (max-width:560px){.feed .item{grid-template-columns:1fr}}
+.feed time{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.kind{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div>
+    <div class="eyebrow">stf plane · read-only snapshot</div>
+    <h1 id="title">STF Plane Dashboard</h1>
+  </div>
+  <div class="snap" id="snap"></div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="filters" id="filters" role="group" aria-label="Filter by spec"><span>Spec</span></div>
+
+<section>
+  <div class="sec-head"><h2>Specs</h2><span class="hint">specify → clarify → plan → tasks → analyze → done</span></div>
+  <div class="specs" id="specs"></div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>Tasks</h2><span class="hint" id="taskhint"></span></div>
+  <div id="tasks"></div>
+</section>
+
+<div class="grid2">
+  <section>
+    <div class="sec-head"><h2>Open questions</h2><span class="hint" id="qhint"></span></div>
+    <div id="questions"></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>Decisions</h2><span class="hint" id="dhint"></span></div>
+    <div id="decisions"></div>
+  </section>
+</div>
+
+<div class="grid2">
+  <section>
+    <div class="sec-head"><h2>Handoffs</h2><span class="hint">next session's starting point</span></div>
+    <div id="handoffs"></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>Memories</h2><span class="hint">shown in every session's recall</span></div>
+    <div id="memories"></div>
+  </section>
+</div>
+
+<div class="grid2">
+  <section>
+    <div class="sec-head"><h2>Runs</h2><span class="hint">open runs first</span></div>
+    <div id="runs"></div>
+  </section>
+  <section>
+    <div class="sec-head"><h2>Recent events</h2><span class="hint">newest first</span></div>
+    <div id="events"></div>
+  </section>
+</div>
+
+<footer id="foot"></footer>
+</div>
+
+<script type="application/json" id="plane">/*__DATA__*/</script>
+<script>
+var D = JSON.parse(document.getElementById("plane").textContent);
+var PHASES = ["specify","clarify","plan","tasks","analyze","done"];
+var STATUSES = ["done","in_progress","blocked","pending","cancelled"];
+var BARC = {done:"var(--ok)",in_progress:"var(--accent)",blocked:"var(--bad)",pending:"var(--idle)",cancelled:"var(--rule)"};
+var sel = "all";
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function pad(n){return n==null?"—":String(n).padStart(3,"0");}
+function pill(st){return '<span class="pill s-'+esc(st)+'">'+esc(String(st).replace("_"," "))+'</span>';}
+function when(t){return t?esc(t.replace("T"," ").replace(/:\d\dZ$/,"")):"";}
+function mine(r){return sel==="all"||r.seq===sel||(r.seq==null&&sel==="factory");}
+function empty(msg){return '<div class="empty">'+msg+'</div>';}
+function specName(seq){var s=D.specs.find(function(x){return x.seq===seq;});return s?pad(seq)+" "+s.slug:"factory-wide";}
+
+function renderHead(){
+  document.getElementById("title").textContent = D.repo + " plane";
+  document.title = "STF Plane Dashboard";
+  document.getElementById("snap").innerHTML =
+    '<div>snapshot of <b>'+esc(D.branch)+'</b> @ <b>'+esc(D.commit)+'</b></div>'+
+    '<div>generated '+esc(D.generated)+'</div>'+
+    (D.dirty?'<div class="stale">.stf/export had uncommitted changes</div>':'');
+  var t=D.tasks, done=t.filter(function(x){return x.status==="done";}).length;
+  var blocked=t.filter(function(x){return x.status==="blocked";}).length;
+  var oq=D.questions.filter(function(q){return q.status==="open";}).length;
+  var openRuns=D.runs.filter(function(r){return r.status==="open";}).length;
+  var pend=D.handoffs.filter(function(h){return h.status==="sent";}).length;
+  var cells=[[D.specs.length,"specs",""],[done+" / "+t.length,"tasks done",""],[blocked,"tasks blocked",blocked?"bad":""],
+    [oq,"open questions",oq?"warn":""],[openRuns,"open runs",openRuns?"warn":""],[pend,"pending handoffs",""]];
+  document.getElementById("stats").innerHTML=cells.map(function(c){return '<div class="stat '+c[2]+'"><span class="n">'+c[0]+'</span><span class="l">'+c[1]+'</span></div>';}).join("");
+  var f=document.getElementById("filters");
+  var opts=[["all","All"]].concat(D.specs.map(function(s){return [s.seq,pad(s.seq)+" "+s.slug];})).concat([["factory","factory-wide"]]);
+  opts.forEach(function(o){
+    var b=document.createElement("button");b.type="button";b.className="chip";b.id="f-"+o[0];b.textContent=o[1];
+    b.setAttribute("aria-pressed",String(o[0]===sel));
+    b.addEventListener("click",function(){sel=o[0];f.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed",String(c===b));});renderBody();});
+    f.appendChild(b);
+  });
+}
+
+function renderSpecs(){
+  var rows=D.specs.filter(function(s){return sel==="all"||s.seq===sel;});
+  document.getElementById("specs").innerHTML = rows.length?rows.map(function(s){
+    var cur=PHASES.indexOf(s.phase);
+    var track=PHASES.map(function(p,i){var c=i<cur?"past":i===cur?(s.gate?"cur gated":"cur"):"";if(s.phase==="done"&&i===cur)c="past";return '<div class="step '+c+'"><i></i>'+p+'</div>';}).join("");
+    var ts=D.tasks.filter(function(t){return t.seq===s.seq;});
+    var by={};STATUSES.forEach(function(k){by[k]=ts.filter(function(t){return t.status===k;}).length;});
+    var bar=ts.length?'<div class="bar">'+STATUSES.map(function(k){return by[k]?'<span style="width:'+(100*by[k]/ts.length)+'%;background:'+BARC[k]+'"></span>':"";}).join("")+'</div>':"";
+    var next=ts.filter(function(t){return t.status==="pending"||t.status==="in_progress";}).sort(function(a,b){return a.ordinal-b.ordinal;})[0];
+    var oq=D.questions.filter(function(q){return q.seq===s.seq&&q.status==="open";}).length;
+    var h=D.handoffs.filter(function(x){return x.seq===s.seq&&x.status==="sent";})[0];
+    return '<div class="spec"><div><div class="id">'+pad(s.seq)+' · <span class="slug">'+esc(s.slug)+'</span></div><div class="t">'+esc(s.title)+'</div></div>'+
+      '<div class="track" aria-label="phase '+esc(s.phase)+'">'+track+'</div>'+
+      '<div class="meta"><div><span class="k">tasks</span><span>'+(ts.length?by.done+" / "+ts.length+" done":"none yet")+'</span></div>'+bar+
+      '<div><span class="k">next</span><span class="mono">'+(next?esc(next.local_id):"—")+'</span></div>'+
+      '<div><span class="k">open questions</span><span>'+oq+'</span></div>'+
+      '<div><span class="k">gate · health</span><span>'+(s.gate?"fresh session needed":"—")+' · '+(s.health&&s.health.score!=null?s.health.score:"—")+'</span></div>'+
+      (h?'<div><span class="k">handoff</span><span class="mono">'+esc(h.local_id)+' '+esc(h.invocation)+'</span></div>':'')+'</div></div>';
+  }).join(""):empty("No specs match this filter.");
+}
+
+function renderTasks(){
+  var ts=D.tasks.filter(function(t){return sel!=="factory"&&mine(t);}).sort(function(a,b){return a.seq-b.seq||a.ordinal-b.ordinal;});
+  document.getElementById("taskhint").textContent = ts.length+" task"+(ts.length===1?"":"s");
+  if(!ts.length){document.getElementById("tasks").innerHTML=empty("No tasks imported yet. A spec gets tasks when its lifecycle reaches the <code>tasks</code> phase (<code>stf_import_tasks</code>).");return;}
+  var html='<div class="tbl"><table><thead><tr><th>Task</th><th>Title</th><th>Tier</th><th>Status</th><th>Detail</th></tr></thead><tbody>', last="";
+  ts.forEach(function(t){
+    var key=t.seq+"|"+t.phase;
+    if(key!==last){html+='<tr class="phase"><td colspan="5">'+esc(specName(t.seq))+' · '+esc(t.phase)+'</td></tr>';last=key;}
+    var detail=t.status==="blocked"?esc(t.blocked_reason):t.status==="done"?"done "+when(t.completed_at):(t.story?esc(t.story):"");
+    html+='<tr><td class="mono">'+esc(t.local_id)+(t.parallel?' [P]':'')+'</td><td>'+esc(t.title)+'</td><td class="mono">'+esc((t.model_tier||"?")+"/"+(t.effort||"?"))+'</td><td>'+pill(t.status)+'</td><td>'+detail+'</td></tr>';
+  });
+  document.getElementById("tasks").innerHTML=html+'</tbody></table></div>';
+}
+
+function renderKnowledge(){
+  var qs=D.questions.filter(mine).sort(function(a,b){return (a.status==="open"?0:1)-(b.status==="open"?0:1)||a.local_id.localeCompare(b.local_id);});
+  document.getElementById("qhint").textContent=qs.filter(function(q){return q.status==="open";}).length+" open · "+qs.length+" total";
+  document.getElementById("questions").innerHTML=qs.length?'<div class="list">'+qs.map(function(q){
+    return '<div class="item"><div class="top"><span class="mono">'+esc(q.local_id)+'</span>'+pill(q.status)+'<span class="sub">'+esc(specName(q.seq))+'</span></div><div>'+esc(q.question)+'</div>'+
+      (q.status!=="open"&&q.resolved_by?'<div class="sub">resolved by '+esc(q.resolved_by)+'</div>':'')+'</div>';}).join("")+'</div>':empty("No questions for this filter.");
+  var ds=D.decisions.filter(mine).sort(function(a,b){return b.local_id.localeCompare(a.local_id);});
+  document.getElementById("dhint").textContent=ds.length+" recorded";
+  document.getElementById("decisions").innerHTML=ds.length?'<div class="list">'+ds.map(function(d){
+    var links=[];if(d.resolves&&d.resolves.length)links.push("resolves "+d.resolves.join(", "));if(d.supersedes&&d.supersedes.length)links.push("supersedes "+d.supersedes.join(", "));if(d.rejects&&d.rejects.length)links.push("rejects "+d.rejects.join(", "));
+    return '<div class="item"><div class="top"><span class="mono">'+esc(d.local_id)+'</span>'+pill(d.status)+'<span class="sub">'+esc(specName(d.seq))+'</span></div><div><strong>'+esc(d.title)+'</strong></div>'+(links.length?'<div class="sub">'+esc(links.join(" · "))+'</div>':'')+'</div>';}).join("")+'</div>':empty("No decisions for this filter.");
+  var hs=D.handoffs.filter(mine).sort(function(a,b){return b.local_id.localeCompare(a.local_id);});
+  document.getElementById("handoffs").innerHTML=hs.length?'<div class="list">'+hs.map(function(h){
+    return '<div class="item"><div class="top"><span class="mono">'+esc(h.local_id)+'</span>'+pill(h.status)+(h.fresh_session?'<span class="pill s-open">fresh session</span>':'')+'</div><div class="mono">'+esc(h.invocation)+'</div><div class="sub">'+esc(h.model_tier+"/"+h.effort)+' · '+when(h.created_at)+'</div></div>';}).join("")+'</div>':empty("No handoffs yet. <code>/stf:handoff emit</code> writes one at the end of a session.");
+  var ms=D.memories.filter(function(m){return m.status==="active"&&mine(m);});
+  document.getElementById("memories").innerHTML=ms.length?'<div class="list">'+ms.map(function(m){
+    return '<div class="item"><div class="top"><span class="mono">'+esc(m.local_id)+'</span><span class="kind">'+esc(m.kind)+'</span></div><div>'+esc(m.title)+'</div></div>';}).join("")+'</div>':empty("No memories yet. <code>/stf:memory</code> stores lessons, constraints and decisions for later sessions.");
+}
+
+function renderActivity(){
+  var rs=D.runs.filter(mine).sort(function(a,b){return (a.status==="open"?0:1)-(b.status==="open"?0:1)||String(b.started_at).localeCompare(String(a.started_at));});
+  document.getElementById("runs").innerHTML=rs.length?'<div class="tbl"><table><thead><tr><th>Run</th><th>Status</th><th>Summary</th></tr></thead><tbody>'+rs.map(function(r){
+    return '<tr><td class="mono">'+esc(r.run_key)+'</td><td>'+pill(r.status)+'</td><td>'+esc(r.summary||"")+'</td></tr>';}).join("")+'</tbody></table></div>':empty("No runs for this filter.");
+  var ev=D.events.filter(mine).slice().reverse().slice(0,15);
+  document.getElementById("events").innerHTML=ev.length?'<div class="list feed">'+ev.map(function(e){
+    return '<div class="item"><time>'+when(e.at)+'</time><div><span class="kind">'+esc(e.kind)+'</span> '+esc(e.summary)+'</div></div>';}).join("")+'</div>':empty("No events for this filter.");
+}
+
+function renderBody(){renderSpecs();renderTasks();renderKnowledge();renderActivity();}
+renderHead();renderBody();
+document.getElementById("foot").innerHTML='Read-only view of <code>.stf/export/</code>. Changes go through <code>stf_*</code> tools, never this page. Regenerate after new commits with <code>stf dashboard</code>.';
+</script>
+</body>
+</html>

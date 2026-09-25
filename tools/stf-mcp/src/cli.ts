@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { StfError } from "./errors.js";
+import { writeDashboard } from "./dashboard.js";
 import { Factory } from "./factory.js";
 import { initPlane, resolveRoot } from "./root.js";
 
@@ -7,6 +8,7 @@ const USAGE = `stf <command>
   init [dir]              create an empty plane (.stf/export) at a git repo root (default: $CLAUDE_PROJECT_DIR or cwd)
   recall                  SessionStart block (fail-soft: prints nothing on error, including when there is no plane)
   status [seq]            dashboard JSON
+  dashboard [out]         read-only HTML view of the plane (default .stf/dashboard.html, gitignored)
   verify [seq] [--dry-run]
   import-tasks <seq>
   export                  re-render .stf/export from the loaded state (round-trip check)
@@ -34,6 +36,9 @@ async function main(argv: string[]): Promise<number> {
   switch (cmd) {
     case "status":
       print(f.status({ seq }));
+      return 0;
+    case "dashboard":
+      print(writeDashboard(f, rest[0]));
       return 0;
     case "verify": {
       const r = f.verify({ seq, apply: !rest.includes("--dry-run") });

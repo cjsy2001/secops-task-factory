@@ -9,7 +9,7 @@
     "stf-mcp": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && mkdir -p dist/db && cp src/db/schema.sql dist/db/schema.sql && chmod +x dist/cli.js dist/index.js",
+    "build": "tsc -p tsconfig.json && mkdir -p dist/db && cp src/db/schema.sql dist/db/schema.sql && cp src/dashboard.html dist/dashboard.html && chmod +x dist/cli.js dist/index.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

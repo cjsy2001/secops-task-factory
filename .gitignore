@@ -1,5 +1,6 @@
-# plane cache (the committed record is .stf/export/)
+# plane cache and rendered views (the committed record is .stf/export/)
 .stf/*.db*
+.stf/dashboard.html
 .stf/export/*.tmp-*
 
 node_modules/
