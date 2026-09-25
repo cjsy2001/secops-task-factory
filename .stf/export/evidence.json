@@ -28,5 +28,45 @@
     "local_id": "EV-003",
     "seq": null,
     "source": "specs/001-devsecops-pipeline/spec.md:72-74 (Assumptions)"
+  },
+  {
+    "claim": "stf dashboard shipped and merged to main",
+    "created_at": "2026-09-25T21:57:18Z",
+    "detail": "Merged as 618c78b (feat(plugin): add a read-only `stf dashboard` HTML view of the plane, 8e0fcaf). Per-repo title added in PR #4 (1cf9b91).",
+    "evidences": "D-008",
+    "link": "https://github.com/cjsy2001/secops-task-factory/pull/3",
+    "local_id": "EV-004",
+    "seq": null,
+    "source": "https://github.com/cjsy2001/secops-task-factory/pull/3"
+  },
+  {
+    "claim": "Status pages moved into the plugin; devsecops-pipeline now keeps only .stf/pages.json",
+    "created_at": "2026-09-25T21:57:20Z",
+    "detail": "PR #4 (1cf9b91, merged 7eb5cfc): stf spec-page/hub/pages, pages hook, stf:pages; tests/pages.test.ts. devsecops-pipeline#2 (572b4f4) removed scripts/status-pages and the project hook; make status-pages and the plugin hook rebuilt all three pages to the recorded URLs.",
+    "evidences": "D-009",
+    "link": "https://github.com/cjsy2001/devsecops-pipeline/pull/2",
+    "local_id": "EV-005",
+    "seq": null,
+    "source": "https://github.com/cjsy2001/secops-task-factory/pull/4"
+  },
+  {
+    "claim": "stf_move_spec shipped and spec 001 is marked moved",
+    "created_at": "2026-09-25T21:57:23Z",
+    "detail": "PR #5: 9818cf6 (stf_move_spec, spec.moved column, guards mutation-checked in tests/move.test.ts) and 417e7bc (stf move 1 cjsy2001/devsecops-pipeline 1 D-004). Recall shows \"001 devsecops-pipeline: moved → cjsy2001/devsecops-pipeline#1\"; stf import-tasks 1 is refused with spec_moved.",
+    "evidences": "D-010",
+    "link": "https://github.com/cjsy2001/secops-task-factory/pull/5",
+    "local_id": "EV-006",
+    "seq": null,
+    "source": "https://github.com/cjsy2001/secops-task-factory/pull/5"
+  },
+  {
+    "claim": "stf new-project and stf:new-project shipped",
+    "created_at": "2026-09-25T21:57:25Z",
+    "detail": "PR #6 (284acb2, merged f490cf4): src/new-project.ts, src/templates/project/*.tmpl, skills/new-project, tests/new-project.test.ts. A real scaffold passed the gitleaks hook on its first commit; a runtime built from a clean plugin copy scaffolded a full repo.",
+    "evidences": "D-011",
+    "link": "https://github.com/cjsy2001/secops-task-factory/pull/6",
+    "local_id": "EV-007",
+    "seq": null,
+    "source": "https://github.com/cjsy2001/secops-task-factory/pull/6"
   }
 ]

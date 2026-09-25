@@ -119,5 +119,137 @@
     "tradeoffs": "Pro: shows the method as well as the projects. Con: reviewers would probe the known trust gaps (session gate bound to the process, self-reported analyze score) before they are closed.",
     "updated_at": "2026-09-24T23:41:21Z",
     "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:13Z",
+    "local_id": "ALT-012",
+    "option": "AI embeddings / vector search for memory and recall",
+    "rationale": "Operator (2026-09-25): local full-text memory is enough as long as it works across sessions.",
+    "seq": null,
+    "summary": "Embed memories and plane records and retrieve them by semantic similarity.",
+    "tradeoffs": "Pro: fuzzy recall across wording. Con: an embedding model and a vector index to host or call, results that can't be reproduced byte-for-byte, and a new place for secrets to leak.",
+    "updated_at": "2026-09-25T21:56:49Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:15Z",
+    "local_id": "ALT-013",
+    "option": "Azure-hosted plane with authentication",
+    "rationale": "Operator (2026-09-25): the plane stays local; no hosted plane, no auth.",
+    "seq": null,
+    "summary": "Run the plane as a hosted service (API + database) that every repo and session talks to over the network.",
+    "tradeoffs": "Pro: one live view across machines. Con: infrastructure, cost and an auth surface to secure; state stops travelling with git, so evidence is no longer verifiable from a checkout.",
+    "updated_at": "2026-09-25T21:56:51Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:18Z",
+    "local_id": "ALT-014",
+    "option": "Server-side auto-fix of detected problems",
+    "rationale": "Operator (2026-09-25): detection stays verify + analyze gate + refusals; automation goes through /loop or scheduled agents, tracked changes through change requests.",
+    "seq": null,
+    "summary": "Let the stf server repair what verify or analyze finds (e.g. rewrite files, flip statuses back, regenerate artefacts) on its own.",
+    "tradeoffs": "Pro: fewer manual steps. Con: the server would change content nobody reviewed, which undoes the point of refusals and hashed evidence.",
+    "updated_at": "2026-09-25T21:56:54Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:20Z",
+    "local_id": "ALT-015",
+    "option": "Read the plane only as JSON (stf status / make status)",
+    "rationale": "Operator (2026-09-25) asked for a simple read-only dashboard instead of reading JSON (Roadmap P1-7).",
+    "seq": null,
+    "summary": "No HTML view: people read stf_status output or the committed .stf/export/*.json.",
+    "tradeoffs": "Pro: nothing extra to build. Con: hard to scan phases, tasks, questions and handoffs at a glance.",
+    "updated_at": "2026-09-25T21:56:56Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:26Z",
+    "local_id": "ALT-016",
+    "option": "A copy of the status-page scripts in every project repo",
+    "rationale": "Operator (2026-09-25): move it into the plugin so every project repo gets it and keeps only its own pages.json.",
+    "seq": null,
+    "summary": "Each project repo keeps its own scripts/status-pages (renderers, templates, hook.py) and a project PostToolUse hook, as devsecops-pipeline did first.",
+    "tradeoffs": "Pro: no plugin change. Con: N copies drift apart, each fix is repeated per repo, and the hook has to locate the plugin's CLI in the plugin cache.",
+    "updated_at": "2026-09-25T21:56:59Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:28Z",
+    "local_id": "ALT-017",
+    "option": "Keep the Python renderers (python-markdown via uv)",
+    "rationale": "Operator preferred CLI verbs next to stf dashboard with no Python/uv dependency; ported to TypeScript with marked, anchors and links verified identical on spec 001.",
+    "seq": null,
+    "summary": "Ship render_spec.py / render_hub.py inside the plugin and call them through uv.",
+    "tradeoffs": "Pro: no port. Con: every machine needs Python and uv next to Node; two languages in the plugin.",
+    "updated_at": "2026-09-25T21:56:59Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:30Z",
+    "local_id": "ALT-018",
+    "option": "Record a decision only; no moved state in the plane",
+    "rationale": "Operator (2026-09-25) chose a real moved state that blocks new writes and shows where the spec went.",
+    "seq": null,
+    "summary": "Note the move in a decision and leave the old spec rows as they are.",
+    "tradeoffs": "Pro: no code change. Con: status and recall keep showing the old spec as live work at clarify, with its open questions, and nothing stops a session from writing to it.",
+    "updated_at": "2026-09-25T21:57:02Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:32Z",
+    "local_id": "ALT-019",
+    "option": "Delete the moved specs' records from the factory plane",
+    "rationale": "Operator (2026-09-25): keep the spec's history intact (questions, decisions, events); only block new writes.",
+    "seq": null,
+    "summary": "Remove the spec row and its questions, decisions and events once the spec lives elsewhere.",
+    "tradeoffs": "Pro: a clean plane. Con: loses the history of why things were decided; the plane is meant to be append-only in spirit.",
+    "updated_at": "2026-09-25T21:57:02Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:34Z",
+    "local_id": "ALT-020",
+    "option": "Mark all four specs as moved now",
+    "rationale": "Operator (2026-09-25): mark 002–004 later, when they actually move.",
+    "seq": null,
+    "summary": "Apply the moved state to 001–004 immediately, using planned repo names for 002–004.",
+    "tradeoffs": "Pro: one step. Con: 002–004 have no repos or planes yet, so the recorded target would point at nothing.",
+    "updated_at": "2026-09-25T21:57:02Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:37Z",
+    "local_id": "ALT-021",
+    "option": "Copy the project scaffold by hand for each new repo",
+    "rationale": "Operator (2026-09-25) asked for a stf new-project skill.",
+    "seq": null,
+    "summary": "Start each project by copying devsecops-pipeline's first commit (a8ece62) and editing it.",
+    "tradeoffs": "Pro: nothing to build. Con: error-prone (hook mode, pinned versions, placeholders), and fixes to the scaffold never reach the next project.",
+    "updated_at": "2026-09-25T21:57:06Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:39Z",
+    "local_id": "ALT-022",
+    "option": "Charter spec 001 in the new repo's first session",
+    "rationale": "Operator (2026-09-25): charter during setup, so the new repo starts at specify.",
+    "seq": null,
+    "summary": "new-project writes files and an empty plane only; the first session in the new repo charters the spec.",
+    "tradeoffs": "Pro: the scaffold stays minimal. Con: one more manual step before the lifecycle can start.",
+    "updated_at": "2026-09-25T21:57:06Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-09-25T21:56:41Z",
+    "local_id": "ALT-023",
+    "option": "Drop the factory repo's plane once 002–004 have moved",
+    "rationale": "Operator (2026-09-25) chose to keep the factory plane for factory-level work.",
+    "seq": null,
+    "summary": "Treat secops-task-factory as tooling only and delete .stf/export.",
+    "tradeoffs": "Pro: one less thing to maintain. Con: loses the only record of factory-wide decisions, recall in factory sessions, the moved specs' history, and CI's round-trip and verify checks against a real plane.",
+    "updated_at": "2026-09-25T21:57:08Z",
+    "verdict": "rejected"
   }
 ]
