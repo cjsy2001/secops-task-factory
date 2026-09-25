@@ -300,6 +300,12 @@ export function renderSpecPage(f: Factory, seq: number, data: DashboardData = da
     ["{{STEPS}}", steps],
     ["{{PHASE}}", esc(cur)],
     ["{{UPDATED}}", esc(spec.updated_at ?? "")],
+    [
+      "{{MOVED}}",
+      spec.moved
+        ? `<span>moved → <b><a href="https://github.com/${esc(spec.moved.repo)}" target="_blank" rel="noopener">${esc(spec.moved.repo)}</a> #${pad3(spec.moved.seq)}</b></span>`
+        : "",
+    ],
     // document content goes in last so text inside the docs is never treated as a placeholder
     ["{{TABS}}", tabs.join("")],
     ["{{PANELS}}", panels.join("")],

@@ -59,6 +59,7 @@ section{margin-block:28px}
 @media (min-width:900px){.spec{grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) minmax(0,.9fr);align-items:center}}
 .spec .id{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
 .spec .t{font-weight:600;margin-top:2px}
+.spec.moved{background:var(--sunk)}
 .spec .slug{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
 .track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
 .step{display:grid;gap:4px;font-size:11.5px;color:var(--muted);text-align:center}
@@ -206,9 +207,10 @@ function renderSpecs(){
     var next=ts.filter(function(t){return t.status==="pending"||t.status==="in_progress";}).sort(function(a,b){return a.ordinal-b.ordinal;})[0];
     var oq=D.questions.filter(function(q){return q.seq===s.seq&&q.status==="open";}).length;
     var h=D.handoffs.filter(function(x){return x.seq===s.seq&&x.status==="sent";})[0];
-    return '<div class="spec"><div><div class="id">'+pad(s.seq)+' · <span class="slug">'+esc(s.slug)+'</span></div><div class="t">'+esc(s.title)+'</div></div>'+
+    var mv=s.moved?'<div><span class="k">moved</span><span class="mono">→ <a href="https://github.com/'+esc(s.moved.repo)+'" target="_blank" rel="noopener">'+esc(s.moved.repo)+'</a> #'+esc(s.moved.seq)+'</span></div>':'';
+    return '<div class="spec'+(s.moved?' moved':'')+'"><div><div class="id">'+pad(s.seq)+' · <span class="slug">'+esc(s.slug)+'</span></div><div class="t">'+esc(s.title)+'</div></div>'+
       '<div class="track" aria-label="phase '+esc(s.phase)+'">'+track+'</div>'+
-      '<div class="meta"><div><span class="k">tasks</span><span>'+(ts.length?by.done+" / "+ts.length+" done":"none yet")+'</span></div>'+bar+
+      '<div class="meta">'+mv+'<div><span class="k">tasks</span><span>'+(ts.length?by.done+" / "+ts.length+" done":"none yet")+'</span></div>'+bar+
       '<div><span class="k">next</span><span class="mono">'+(next?esc(next.local_id):"—")+'</span></div>'+
       '<div><span class="k">open questions</span><span>'+oq+'</span></div>'+
       '<div><span class="k">gate · health</span><span>'+(s.gate?"fresh session needed":"—")+' · '+(s.health&&s.health.score!=null?s.health.score:"—")+'</span></div>'+
