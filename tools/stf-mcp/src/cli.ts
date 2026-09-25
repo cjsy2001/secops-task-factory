@@ -4,6 +4,7 @@ import { writeDashboard } from "./dashboard.js";
 import { Factory } from "./factory.js";
 import { writeHub } from "./hub.js";
 import { pagesHook, refreshPages } from "./pages.js";
+import { newProject } from "./new-project.js";
 import { initPlane, resolveRoot } from "./root.js";
 import { writeSpecPage } from "./spec-page.js";
 
@@ -19,7 +20,10 @@ const USAGE = `stf <command>
   import-tasks <seq>
   export                  re-render .stf/export from the loaded state (round-trip check)
   charter <slug> <title> <summary>
-  move <seq> <owner/repo> <targetSeq> <D-NNN> <reason>   mark a spec as moved to another repo's plane`;
+  move <seq> <owner/repo> <targetSeq> <D-NNN> <reason>   mark a spec as moved to another repo's plane
+  new-project <dir> --name <kebab> --description <text> [--title <spec title>] [--private] [--no-azure]
+              [--license mit|none] [--author <name>]
+                          scaffold a project repo (git, gitleaks hook + CI, stf config, rules, plane, spec 001); no commit, no network`;
 
 async function main(argv: string[]): Promise<number> {
   const [cmd, ...rest] = argv;
@@ -43,6 +47,32 @@ async function main(argv: string[]): Promise<number> {
       out = { suppressOutput: true, systemMessage: `status-pages hook failed: ${String(e instanceof Error ? e.message : e).split("\n")[0]}` };
     }
     process.stdout.write(JSON.stringify(out) + "\n");
+    return 0;
+  }
+  if (cmd === "new-project") {
+    const flag = (name: string) => {
+      const i = rest.indexOf(`--${name}`);
+      return i >= 0 ? rest[i + 1] : undefined;
+    };
+    const dir = rest[0];
+    const name = flag("name");
+    const description = flag("description");
+    const license = flag("license");
+    if (!dir || dir.startsWith("--") || !name || !description || (license && license !== "mit" && license !== "none")) {
+      process.stderr.write(USAGE + "\n");
+      return 2;
+    }
+    const r = newProject({
+      dir,
+      name,
+      description,
+      title: flag("title"),
+      author: flag("author"),
+      license: license as "mit" | "none" | undefined,
+      azure: !rest.includes("--no-azure"),
+      visibility: rest.includes("--private") ? "private" : "public",
+    });
+    process.stdout.write(JSON.stringify(r, null, 2) + "\n");
     return 0;
   }
   if (cmd === "init") {
