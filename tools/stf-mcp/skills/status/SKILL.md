@@ -16,6 +16,8 @@ description: Read-only "where are we / what's next" across all specs or for one 
 
 If the user wants to see it rather than read it, run `stf dashboard` (Bash tool; it only reads the plane) and give them the
 path it prints (`.stf/dashboard.html`, gitignored) to open in a browser.
+If the repo has `.stf/pages.json`, its status pages (hub, dashboard, spec pages) are published artifacts: point at the hub URL
+there, and use **stf:pages** to republish them.
 
 Every claim you report carries the probe it came from. If the plane and disk disagree, say so and cite
 both. Never smooth over a divergence. Don't write anything; for fixes, point at the skill that owns them.
