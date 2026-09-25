@@ -8,7 +8,7 @@ import { factory, tempRepo } from "./helpers.js";
 
 // THE authority for the tool surface. Prose elsewhere must never count tools by hand.
 const EXPECTED = [
-  "stf_charter_spec", "stf_list_specs", "stf_get_spec", "stf_advance_phase", "stf_reopen_phase",
+  "stf_charter_spec", "stf_list_specs", "stf_get_spec", "stf_advance_phase", "stf_reopen_phase", "stf_move_spec",
   "stf_import_tasks", "stf_list_tasks", "stf_get_task", "stf_next_task", "stf_set_task_status", "stf_capture_task_outcome", "stf_set_task_model",
   "stf_start_run", "stf_complete_run", "stf_append_event", "stf_checkpoint",
   "stf_capture_decision", "stf_capture_open_question", "stf_capture_alternative", "stf_capture_evidence", "stf_list_knowledge",

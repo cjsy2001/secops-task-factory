@@ -21,7 +21,7 @@
         ]
       },
       {
-        "matcher": "mcp__plugin_stf_stf__stf_(advance_phase|reopen_phase|charter_spec|capture_.*|import_tasks|set_task_status|set_task_model|checkpoint|complete_run|handoff_emit|handoff_pickup|handoff_archive|verify)",
+        "matcher": "mcp__plugin_stf_stf__stf_(advance_phase|reopen_phase|move_spec|charter_spec|capture_.*|import_tasks|set_task_status|set_task_model|checkpoint|complete_run|handoff_emit|handoff_pickup|handoff_archive|verify)",
         "hooks": [
           {
             "type": "command",

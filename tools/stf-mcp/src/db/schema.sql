@@ -11,6 +11,7 @@ CREATE TABLE spec (
   gate          TEXT,                   -- json {sessionId, runKey, reason, setAt} or null
   artefacts     TEXT NOT NULL DEFAULT '{}', -- json {phase: {path: sha256}}
   health        TEXT,                   -- json {score, highFindings, report, at} from the last passing analyze
+  moved         TEXT,                   -- json {repo, seq, decision, reason, at} once the spec lives in another repo, else null
   created_at    TEXT NOT NULL,
   updated_at    TEXT NOT NULL
 );
