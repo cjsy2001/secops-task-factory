@@ -6,5 +6,7 @@ import { buildServer } from "./server.js";
 
 // One process per Claude session (stdio), so the Factory's sessionId IS the session identity
 // the analyze gate and fresh-session handoffs compare against.
-const factory = new Factory(resolveRoot());
-await buildServer(factory).connect(new StdioServerTransport());
+// The Factory is created on the first tool call: as a plugin the server starts in every project where the
+// plugin is enabled, and a project without a plane must get a `no_plane` refusal, not a crashed server.
+let factory: Factory | undefined;
+await buildServer(() => (factory ??= new Factory(resolveRoot()))).connect(new StdioServerTransport());

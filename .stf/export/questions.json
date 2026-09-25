@@ -28,12 +28,12 @@
     "created_at": "2026-09-23T18:01:42Z",
     "local_id": "OQ-003",
     "question": "Should this project's code eventually live in its own public repo for the portfolio, with this factory repo private?",
-    "resolution": null,
-    "resolved_by": null,
+    "resolution": "Each project (devsecops-pipeline, hardened-iac, malware-sandbox, zero-trust-audit) moves to its own GitHub repo, public from the first commit. Each repo holds its code at the root, its specs/, its own .stf/export/ plane and its project rules. github.com/cjsy2001/secops-task-factory stays private and holds the stf MCP server, skills, hooks and rule templates, packaged as a Claude Code plugin, plus a plane for factory-level work.",
+    "resolved_by": "D-004",
     "seq": 1,
     "spec_ref": "Q-003",
-    "status": "open",
-    "updated_at": "2026-09-23T18:01:42Z"
+    "status": "resolved",
+    "updated_at": "2026-09-24T23:41:21Z"
   },
   {
     "context": null,

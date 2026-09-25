@@ -1,9 +1,9 @@
 ---
-name: stf-memory
-description: Capture durable cross-session knowledge (lessons, constraints, decisions, open questions) in the stf plane, and run a user-invoked checkpoint sweep of the session. Use when the user says "remember this", "save that", "note for next time", "don't forget", "/stf-memory checkpoint", "what do we know about X", or "forget/correct that memory". Memories load automatically at session start via the SessionStart hook.
+name: memory
+description: Capture durable cross-session knowledge (lessons, constraints, decisions, open questions) in the stf plane, and run a user-invoked checkpoint sweep of the session. Use when the user says "remember this", "save that", "note for next time", "don't forget", "/stf:memory checkpoint", "what do we know about X", or "forget/correct that memory". Memories load automatically at session start via the SessionStart hook.
 ---
 
-# stf-memory
+# stf:memory
 
 Memory is what the NEXT session needs and cannot re-derive from the repo. **A false memory is worse
 than a missing one**: it gets injected into every future session as fact.

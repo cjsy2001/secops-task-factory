@@ -1,9 +1,9 @@
 ---
-name: stf-decide
+name: decide
 description: Record decisions, open questions, alternatives and evidence in the stf plane, and keep an append-only reasoning journal per topic. Use when the user says "record this decision", "we decided", "why did we choose X", "log the options", "open question", "capture the trade-offs", or "journal this".
 ---
 
-# stf-decide
+# stf:decide
 
 Decisions are the backbone of anti-hallucination. When a later session wonders "why Semgrep and not
 SonarQube?", the answer is a `D-NNN` with its rejected `ALT-NNN`s and `EV-NNN` evidence, not a guess.
