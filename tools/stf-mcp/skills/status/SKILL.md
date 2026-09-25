@@ -9,7 +9,7 @@ description: Read-only "where are we / what's next" across all specs or for one 
 2. `stf_verify {seq?, apply: false}` for evidence health. It is read-only in this mode.
 3. `git status -sb` and `git log --oneline -5`.
 4. Report in this order:
-   - a one-line position per spec;
+   - a one-line position per spec (a spec with `moved` lives in another repo: say "moved → <repo>" and route its work there);
    - blockers (blocked tasks with reasons, `absent` evidence, drift);
    - open questions;
    - the single recommended next step, with its invocation (use the stf:handoff routing table).

@@ -16,7 +16,7 @@ interface TableSpec {
 }
 
 export const TABLES: TableSpec[] = [
-  { table: "spec", file: "specs.json", orderBy: "seq", json: ["gate", "artefacts", "health"] },
+  { table: "spec", file: "specs.json", orderBy: "seq", json: ["gate", "artefacts", "health", "moved"] },
   { table: "task", file: "tasks.json", orderBy: "seq, ordinal, local_id", json: ["requirements"] },
   { table: "artefact_hash", file: "artefact-hashes.json", orderBy: "seq, local_id, path", json: [] },
   { table: "run", file: "runs.json", orderBy: "started_at, run_key", json: [] },

@@ -20,7 +20,9 @@ function link(url: string | undefined, label: string): string {
 export function renderHub(f: Factory, pages: Pages = readPages(f.root), data: DashboardData = dashboardData(f), built = new Date()): string {
   const specs = [...(data.specs as Row[])].sort((a, b) => a.seq - b.seq);
   const tasks = data.tasks as Row[];
-  const questions = data.questions as Row[];
+  // a moved spec's questions belong to the repo it moved to; its card links there instead
+  const movedSeqs = new Set(specs.filter((s) => s.moved).map((s) => s.seq));
+  const questions = (data.questions as Row[]).filter((q) => !movedSeqs.has(q.seq));
   const done = tasks.filter((t) => t.status === "done").length;
   const blocked = tasks.filter((t) => t.status === "blocked").length;
   const openQ = questions.filter((q) => q.status === "open").length;
@@ -47,13 +49,15 @@ export function renderHub(f: Factory, pages: Pages = readPages(f.root), data: Da
     const qOpen = questions.filter((q) => q.seq === seq && q.status === "open").length;
     const nxt = [...ts].sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0)).find((t) => t.status === "pending" || t.status === "in_progress");
     const handoff = pending.find((h) => h.seq === seq);
-    const note = handoff
+    const note = s.moved
+      ? `moved → <a href="https://github.com/${esc(s.moved.repo)}" target="_blank" rel="noopener">${esc(s.moved.repo)}</a> (spec ${pad3(s.moved.seq)} there); history only here`
+      : handoff
       ? `handoff <code>${esc(handoff.invocation)}</code>`
       : s.gate
         ? "fresh session needed for analyze"
         : `next phase: <b>${esc(s.phase)}</b>`;
     return (
-      `<article class="spec"><div class="spec-id"><span class="seq">${pad3(seq)}</span>` +
+      `<article class="spec${s.moved ? " moved" : ""}"><div class="spec-id"><span class="seq">${pad3(seq)}</span>` +
       `<span class="slug">${esc(s.slug)}</span></div>` +
       `<h3>${esc(s.title ?? s.slug)}</h3>` +
       `<ol class="track" aria-label="phase ${esc(s.phase)}">${track}</ol>` +

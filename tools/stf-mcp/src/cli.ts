@@ -18,7 +18,8 @@ const USAGE = `stf <command>
   verify [seq] [--dry-run]
   import-tasks <seq>
   export                  re-render .stf/export from the loaded state (round-trip check)
-  charter <slug> <title> <summary>`;
+  charter <slug> <title> <summary>
+  move <seq> <owner/repo> <targetSeq> <D-NNN> <reason>   mark a spec as moved to another repo's plane`;
 
 async function main(argv: string[]): Promise<number> {
   const [cmd, ...rest] = argv;
@@ -83,6 +84,12 @@ async function main(argv: string[]): Promise<number> {
     case "export":
       print({ changed: f.store.export() });
       return 0;
+    case "move": {
+      const [s, repo, target, decision, ...reason] = rest;
+      if (!s || !/^\d+$/.test(s) || !repo || !target || !/^\d+$/.test(target) || !decision || !reason.length) break;
+      print(f.moveSpec({ seq: Number(s), repo, targetSeq: Number(target), decision, reason: reason.join(" ") }));
+      return 0;
+    }
     case "charter": {
       const [slug, title, ...summary] = rest;
       if (!slug || !title || !summary.length) break;

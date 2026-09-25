@@ -98,6 +98,23 @@ export class Factory {
     return row;
   }
 
+  /**
+   * A spec that new work may be written to. A moved spec (stf_move_spec) keeps its history here, read-only: its
+   * lifecycle, tasks, runs, captures and handoffs continue in the repo it moved to.
+   */
+  private writable(seq: number): Row {
+    const s = this.spec(seq);
+    const moved = parseJson<Row | null>(s.moved, null);
+    if (moved) {
+      throw new StfError(
+        "spec_moved",
+        `Spec ${pad3(seq)} ${s.slug} moved to ${moved.repo} (spec ${pad3(moved.seq)} there, per ${moved.decision}). ` +
+          "Work on it in that repo; this plane keeps only its history.",
+      );
+    }
+    return s;
+  }
+
   specDir(spec: Row): string {
     return `specs/${pad3(spec.seq)}-${spec.slug}`;
   }
@@ -170,6 +187,7 @@ export class Factory {
       gate: parseJson(row.gate, null),
       health: parseJson(row.health, null),
       artefacts: parseJson(row.artefacts, {}),
+      moved: parseJson(row.moved, null),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -233,7 +251,7 @@ export class Factory {
     return this.store.read((db) =>
       (db.prepare("SELECT * FROM spec ORDER BY seq").all() as Row[]).map((s) => {
         const counts = this.counts(s.seq);
-        return { seq: s.seq, slug: s.slug, title: s.title, phase: s.phase, gated: !!s.gate, dir: this.specDir(s), tasks: counts };
+        return { seq: s.seq, slug: s.slug, title: s.title, phase: s.phase, gated: !!s.gate, moved: parseJson(s.moved, null), dir: this.specDir(s), tasks: counts };
       }),
     );
   }
@@ -268,7 +286,7 @@ export class Factory {
   }): Row {
     return this.shapeSpec(
       this.store.mutate((db) => {
-        const s = this.spec(a.seq);
+        const s = this.writable(a.seq);
         this.requireOpenRun(a.runKey, a.seq);
         const idx = LIFECYCLE_PHASES.indexOf(a.phase);
         const cur = LIFECYCLE_PHASES.indexOf(s.phase);
@@ -355,7 +373,7 @@ export class Factory {
   reopenPhase(a: { seq: number; phase: LifecyclePhase; reason: string; runKey: string }): Row {
     return this.shapeSpec(
       this.store.mutate((db) => {
-        const s = this.spec(a.seq);
+        const s = this.writable(a.seq);
         this.requireOpenRun(a.runKey, a.seq);
         const idx = LIFECYCLE_PHASES.indexOf(a.phase);
         if (a.phase === "done" || idx > LIFECYCLE_PHASES.indexOf(s.phase)) {
@@ -375,11 +393,42 @@ export class Factory {
     );
   }
 
+  /**
+   * Record that a spec now lives in another repo (its own plane there, e.g. per D-004). Its questions, decisions, events
+   * and evidence stay here untouched; every later lifecycle, task, run, capture or handoff write on it is refused.
+   */
+  moveSpec(a: { seq: number; repo: string; targetSeq: number; decision: string; reason: string }): Row {
+    if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\/[A-Za-z0-9._-]+$/.test(a.repo)) {
+      throw new StfError("bad_repo", "repo must be a GitHub owner/name, e.g. cjsy2001/devsecops-pipeline.");
+    }
+    if (!Number.isInteger(a.targetSeq) || a.targetSeq < 1) throw new StfError("bad_seq", "targetSeq is the spec's seq in the repo it moved to (≥1).");
+    const secret = findSecret(a.reason);
+    if (secret) throw new StfError("secret_detected", `Refusing to persist what looks like a ${secret}.`);
+    return this.shapeSpec(
+      this.store.mutate((db) => {
+        const s = this.spec(a.seq);
+        const moved = parseJson<Row | null>(s.moved, null);
+        if (moved) throw new StfError("already_moved", `Spec ${pad3(a.seq)} already moved to ${moved.repo} (spec ${pad3(moved.seq)}).`);
+        this.requireRefs("decision", [a.decision]);
+        const open = (db.prepare("SELECT run_key FROM run WHERE seq = ? AND status = 'open' ORDER BY run_key").all(a.seq) as Row[]).map((r) => r.run_key);
+        if (open.length) throw new StfError("open_runs", `Close the open runs on spec ${pad3(a.seq)} first (stf_complete_run): ${open.join(", ")}.`);
+        const at = this.now();
+        db.prepare("UPDATE spec SET moved = ?, updated_at = ? WHERE seq = ?").run(
+          JSON.stringify({ repo: a.repo, seq: a.targetSeq, decision: a.decision, reason: a.reason, at }),
+          at,
+          a.seq,
+        );
+        this.event(a.seq, "lifecycle", `moved → ${a.repo}#${a.targetSeq} (${a.decision}): ${a.reason}`);
+        return this.spec(a.seq);
+      }),
+    );
+  }
+
   // ───────────────────────────── tasks ─────────────────────────────
 
   importTasks(a: { seq: number }): Row {
     return this.store.mutate((db) => {
-      const s = this.spec(a.seq);
+      const s = this.writable(a.seq);
       const p = this.tasksPath(s);
       if (!existsSync(p)) throw new StfError("no_tasks_file", `${this.specDir(s)}/tasks.md does not exist.`);
       const parsed = parseTasks(readFileSync(p, "utf8"));
@@ -498,7 +547,7 @@ export class Factory {
       throw new StfError("use_capture_outcome", "A task becomes done only through stf_capture_task_outcome (output + artefacts).");
     }
     return this.store.mutate((db) => {
-      const s = this.spec(a.seq);
+      const s = this.writable(a.seq);
       const t = this.task(a.seq, a.localId);
       this.checkTitle(t, a.expectTitle);
       if (t.status === a.status) return this.shapeTask(t);
@@ -531,7 +580,7 @@ export class Factory {
     testsCommand?: string;
   }): Row {
     return this.store.mutate((db) => {
-      const s = this.spec(a.seq);
+      const s = this.writable(a.seq);
       const t = this.task(a.seq, a.localId);
       this.checkTitle(t, a.expectTitle);
       this.requireOpenRun(a.runKey, a.seq);
@@ -569,6 +618,7 @@ export class Factory {
 
   setTaskModel(a: { seq: number; localId: string; modelTier: string; effort: string }): Row {
     return this.store.mutate((db) => {
+      this.writable(a.seq);
       this.task(a.seq, a.localId);
       db.prepare("UPDATE task SET model_tier = ?, effort = ?, updated_at = ? WHERE seq = ? AND local_id = ?").run(a.modelTier, a.effort, this.now(), a.seq, a.localId);
       return this.shapeTask(this.task(a.seq, a.localId));
@@ -580,7 +630,7 @@ export class Factory {
   startRun(a: { seq?: number; kind: string; summary?: string }): Row {
     return this.store.mutate((db) => {
       const seq = a.seq ?? null;
-      if (seq !== null) this.spec(seq);
+      if (seq !== null) this.writable(seq);
       const day = this.now().slice(0, 10).replace(/-/g, "");
       const base = `${a.kind}-${seq === null ? "x" : pad3(seq)}-${day}`;
       let n = 1;
@@ -626,7 +676,7 @@ export class Factory {
 
   appendEvent(a: { seq?: number; kind: string; summary: string; runKey?: string }): Row {
     return this.store.mutate((db) => {
-      if (a.seq !== undefined) this.spec(a.seq);
+      if (a.seq !== undefined) this.writable(a.seq);
       if (a.runKey) this.requireOpenRun(a.runKey, a.seq ?? null);
       this.event(a.seq ?? null, a.kind, a.summary, a.runKey ?? null);
       return (db.prepare("SELECT * FROM event ORDER BY id DESC LIMIT 1").get() as Row);
@@ -635,7 +685,7 @@ export class Factory {
 
   checkpoint(a: { seq: number; runKey: string; phase: string; testsPassed: boolean; testsCommand?: string; commitSha?: string; notes?: string }): Row {
     return this.store.mutate((db) => {
-      this.spec(a.seq);
+      this.writable(a.seq);
       this.requireOpenRun(a.runKey, a.seq);
       const tasks = db.prepare("SELECT local_id, status FROM task WHERE seq = ? AND phase = ? ORDER BY ordinal").all(a.seq, a.phase) as Row[];
       if (!tasks.length) throw new StfError("unknown_phase", `Spec ${a.seq} has no tasks in phase "${a.phase}". Use the exact phase heading from tasks.md.`);
@@ -675,7 +725,7 @@ export class Factory {
     consequences?: string;
   }): Row {
     return this.store.mutate((db) => {
-      if (a.seq !== undefined) this.spec(a.seq);
+      if (a.seq !== undefined) this.writable(a.seq);
       const resolves = a.resolves ?? [];
       const rejects = a.rejects ?? [];
       const supersedes = a.supersedes ?? [];
@@ -716,7 +766,7 @@ export class Factory {
 
   captureOpenQuestion(a: { seq?: number; question: string; context?: string; specRef?: string }): Row {
     return this.store.mutate((db) => {
-      if (a.seq !== undefined) this.spec(a.seq);
+      if (a.seq !== undefined) this.writable(a.seq);
       const dup = (db.prepare("SELECT * FROM question WHERE status = 'open'").all() as Row[]).find((q) => norm(q.question) === norm(a.question) && q.seq === (a.seq ?? null));
       if (dup) return { ...dup, deduplicated: true };
       const id = this.nextId("question", "OQ");
@@ -737,7 +787,7 @@ export class Factory {
 
   captureAlternative(a: { localId?: string; seq?: number; option: string; summary: string; tradeoffs?: string; verdict: "chosen" | "rejected" | "open"; rationale?: string }): Row {
     return this.store.mutate((db) => {
-      if (a.seq !== undefined) this.spec(a.seq);
+      if (a.seq !== undefined) this.writable(a.seq);
       const at = this.now();
       const id = a.localId ?? this.nextId("alternative", "ALT");
       if (db.prepare("SELECT 1 FROM alternative WHERE local_id = ?").get(id)) {
@@ -770,7 +820,7 @@ export class Factory {
 
   captureEvidence(a: { seq?: number; claim: string; source: string; detail?: string; link?: string; evidences: string }): Row {
     return this.store.mutate((db) => {
-      if (a.seq !== undefined) this.spec(a.seq);
+      if (a.seq !== undefined) this.writable(a.seq);
       const ref = a.evidences;
       const taskRef = /^(\d{3})\/(T\d{3,})$/.exec(ref);
       const tables: [RegExp, string][] = [
@@ -928,7 +978,7 @@ export class Factory {
     const secret = findSecret(a.prompt);
     if (secret) throw new StfError("secret_detected", `Refusing to persist a handoff containing what looks like a ${secret}.`);
     return this.store.mutate((db) => {
-      if (a.seq !== undefined) this.spec(a.seq);
+      if (a.seq !== undefined) this.writable(a.seq);
       const seq = a.seq ?? null;
       const at = this.now();
       const prev = db
@@ -1012,6 +1062,12 @@ export class Factory {
       for (const s of specs) {
         const tasks: Row[] = [];
         const counts: Record<ArtefactVerdict, number> = { verified: 0, superseded: 0, absent: 0 };
+        const moved = parseJson<Row | null>(s.moved, null);
+        if (moved) {
+          // its evidence is re-checked by the plane it moved to; here it is history, never flipped to blocked
+          report.push({ seq: s.seq, slug: s.slug, phase: s.phase, moved: { repo: moved.repo, seq: moved.seq }, tasks: counts, problems: [], lifecycleDrift: [], markerMismatches: [] });
+          continue;
+        }
         for (const t of db.prepare("SELECT * FROM task WHERE seq = ? AND status = 'done' ORDER BY ordinal").all(s.seq) as Row[]) {
           const hashes = db.prepare("SELECT * FROM artefact_hash WHERE seq = ? AND local_id = ?").all(s.seq, t.local_id) as Row[];
           const verdicts = hashes.map((h) => ({ path: h.path, verdict: verifyArtefact(this.root, h.path, h.sha256) }));
@@ -1068,6 +1124,11 @@ export class Factory {
           const all = db.prepare("SELECT * FROM task WHERE seq = ? ORDER BY ordinal").all(s.seq) as Row[];
           const next = all.find((t) => t.status === "in_progress") ?? all.find((t) => t.status === "pending");
           const head = db.prepare("SELECT local_id, invocation FROM handoff WHERE seq = ? AND status = 'sent' ORDER BY local_id DESC").get(s.seq) as Row | undefined;
+          const moved = parseJson<Row | null>(s.moved, null);
+          if (moved) {
+            // history only: its open questions and next steps belong to the repo it moved to (stf_list_knowledge still has them)
+            return { seq: s.seq, slug: s.slug, title: s.title, phase: s.phase, gated: false, moved: { repo: moved.repo, seq: moved.seq }, tasks: this.counts(s.seq), nextTask: null, openQuestions: [], headHandoff: null };
+          }
           return {
             seq: s.seq,
             slug: s.slug,
@@ -1105,6 +1166,10 @@ export class Factory {
     if (st.globalHandoff) lines.push(`Pending handoff: ${st.globalHandoff}`);
     lines.push("Specs:");
     for (const s of st.specs) {
+      if (s.moved) {
+        lines.push(`- ${String(s.seq).padStart(3, "0")} ${s.slug}: moved → ${s.moved.repo}#${s.moved.seq} (history only here)`);
+        continue;
+      }
       const c = s.tasks;
       const prog = c.total ? ` ${c.done ?? 0}/${c.total} done` : "";
       lines.push(
