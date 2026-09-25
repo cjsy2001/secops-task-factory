@@ -65,6 +65,7 @@ make setup      # npm ci, build the plane, install the gitleaks pre-commit hook 
 claude plugin install stf@secops-task-factory --scope project   # once per machine (needs gh auth: the repo is private)
 make test       # vitest: unit + MCP contract
 make verify     # evidence re-check across all specs
+make dashboard  # read-only HTML view of the plane → .stf/dashboard.html (any repo: `stf dashboard`)
 make roundtrip  # export re-renders byte-identically
 make gitleaks   # full-history secret scan (docker)
 cd tools/stf-mcp && npx vitest run tests/factory.test.ts -t "handoff"   # single test

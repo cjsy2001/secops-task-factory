@@ -13,6 +13,7 @@
       "Bash(make test)",
       "Bash(make verify)",
       "Bash(make status)",
+      "Bash(make dashboard)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)"

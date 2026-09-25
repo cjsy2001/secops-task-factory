@@ -1,5 +1,5 @@
 STF := node tools/stf-mcp/dist/cli.js
-.PHONY: setup build test verify status recall roundtrip gitleaks dev plugin-validate
+.PHONY: setup build test verify status dashboard recall roundtrip gitleaks dev plugin-validate
 
 setup: ## install deps, build the plane, install the secret-scanning git hook
 	cd tools/stf-mcp && npm ci
@@ -17,6 +17,9 @@ verify: build   ## re-check every done task's evidence (flips absent → blocked
 
 status: build
 	$(STF) status
+
+dashboard: build ## read-only HTML view of the plane → .stf/dashboard.html (gitignored)
+	$(STF) dashboard
 
 recall: build
 	$(STF) recall
