@@ -40,3 +40,4 @@
 {"at":"2026-09-25T21:57:02Z","id":40,"kind":"decision","run_key":null,"seq":null,"session_id":"5e39367e-66bc-431c-ad22-bf1a77e61343","summary":"D-010: Moved specs keep their history and refuse new writes"}
 {"at":"2026-09-25T21:57:06Z","id":41,"kind":"decision","run_key":null,"seq":null,"session_id":"5e39367e-66bc-431c-ad22-bf1a77e61343","summary":"D-011: New projects come from stf new-project"}
 {"at":"2026-09-25T21:57:08Z","id":42,"kind":"decision","run_key":null,"seq":null,"session_id":"5e39367e-66bc-431c-ad22-bf1a77e61343","summary":"D-012: The factory repo keeps its own plane for factory-level work"}
+{"at":"2026-10-27T21:12:49Z","id":43,"kind":"decision","run_key":null,"seq":null,"session_id":"c409af76-dd87-4d17-9132-85362dc32910","summary":"D-013: Commit authors rewritten to the personal email; D-011 and ALT-021 cite a pre-rewrite SHA"}
