@@ -282,6 +282,15 @@ stf new-project <dir> --name <kebab> --description <text> [--title …] [--priva
 
 ---
 
+### A live view of any public repo
+
+The plane viewer at <https://cjsy2001.github.io/secops-task-factory/viewer/> renders a repo's specs, tasks, decisions,
+questions and documents straight from GitHub, with no command to run. Each recorded document carries a badge saying
+whether it still has the hash its phase recorded, which is the check `stf verify` makes.
+
+- `?repo=owner/name` picks the repo, and `&ref=<branch>` previews a PR's branch.
+- It reads `raw.githubusercontent.com`, so it works for public repos only.
+
 ## 6. What the server refuses, and what to do
 
 | Refusal | Why | Fix |
