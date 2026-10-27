@@ -3,8 +3,8 @@
 {{DESCRIPTION}} Part of a security portfolio; the first spec is `specs/001-{{NAME}}/`.
 
 Built through the **stf** task factory (Claude Code plugin `stf@secops-task-factory`, enabled in
-`.claude/settings.json`). The factory itself lives in a separate private repo; this repo holds the code at the
-root, its specs, and its own plane.
+`.claude/settings.json`). The factory itself lives in its own public repo (cjsy2001/secops-task-factory); this repo holds the code at
+the root, its specs, and its own plane.
 
 ## Where truth lives
 
@@ -34,7 +34,7 @@ root, its specs, and its own plane.
 ## Setup
 
 ```
-claude plugin install stf@secops-task-factory --scope project   # once per machine (the factory repo is private)
+claude plugin install stf@secops-task-factory --scope project   # once per machine
 make setup      # core.hooksPath=.githooks → gitleaks pre-commit hook
 make gitleaks   # full-history secret scan (docker)
 ```

@@ -251,5 +251,27 @@
     "tradeoffs": "Pro: one less thing to maintain. Con: loses the only record of factory-wide decisions, recall in factory sessions, the moved specs' history, and CI's round-trip and verify checks against a real plane.",
     "updated_at": "2026-09-25T21:57:08Z",
     "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-10-27T22:21:50Z",
+    "local_id": "ALT-024",
+    "option": "Keep the factory repo private",
+    "rationale": null,
+    "seq": null,
+    "summary": "Leave cjsy2001/secops-task-factory private, as D-004 said, and give access to named collaborators only.",
+    "tradeoffs": "Pro: the factory's own history and PR threads stay unseen. Con: nobody else can install the plugin, because Claude Code clones the marketplace repo; and branch protection is unavailable on a free private repo.",
+    "updated_at": "2026-10-27T22:22:04Z",
+    "verdict": "rejected"
+  },
+  {
+    "created_at": "2026-10-27T22:21:52Z",
+    "local_id": "ALT-025",
+    "option": "Publish a fresh public repo instead",
+    "rationale": null,
+    "seq": null,
+    "summary": "Push the rewritten history to a new public repo with no PR history, and keep this one private as the archive.",
+    "tradeoffs": "Pro: none of GitHub's old PR refs (which still carry the pre-rewrite author email) come along. Con: the PRs and their review history are lost, and the marketplace name and links move.",
+    "updated_at": "2026-10-27T22:22:04Z",
+    "verdict": "rejected"
   }
 ]

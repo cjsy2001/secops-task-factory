@@ -66,12 +66,12 @@
     ],
     "seq": null,
     "statement": "Each project (devsecops-pipeline, hardened-iac, malware-sandbox, zero-trust-audit) moves to its own GitHub repo, public from the first commit. Each repo holds its code at the root, its specs/, its own .stf/export/ plane and its project rules. github.com/cjsy2001/secops-task-factory stays private and holds the stf MCP server, skills, hooks and rule templates, packaged as a Claude Code plugin, plus a plane for factory-level work.",
-    "status": "accepted",
+    "status": "superseded",
     "supersedes": [
       "D-003"
     ],
     "title": "One public repo per project; the factory stays private as a plugin",
-    "updated_at": "2026-09-24T23:41:21Z"
+    "updated_at": "2026-10-27T22:22:04Z"
   },
   {
     "consequences": "Don't propose embeddings for recall or search. If retrieval quality becomes a problem, improve tags, titles and FTS queries first.",
@@ -218,5 +218,24 @@
     "supersedes": [],
     "title": "Commit authors rewritten to the personal email; D-011 and ALT-021 cite a pre-rewrite SHA",
     "updated_at": "2026-10-27T21:12:49Z"
+  },
+  {
+    "consequences": "Supersedes D-004, whose project rule this restates; only the factory's visibility changes. Install docs drop the \"private repo, gh auth first\" notes, and the project scaffold template no longer calls the factory private. The live viewer and docs/using-stf.md are served from this repo by GitHub Pages. GitHub's old PR refs keep the pre-rewrite author email, as accepted in D-013.",
+    "created_at": "2026-10-27T22:22:04Z",
+    "local_id": "D-014",
+    "rationale": "Operator (2026-10-27) asked for the factory to be usable in other people's repos. Claude Code installs a plugin by cloning its marketplace repo, so a private factory can't be installed by anyone outside it. D-004's per-project reasoning still holds and is carried over unchanged: stf's evidence checks only work inside one git root, so each plane lives with the code it verifies. Before the switch, the full history was scanned with gitleaks (no leaks) and commit authors were rewritten to the personal email (D-013).",
+    "rejects": [
+      "ALT-024",
+      "ALT-025"
+    ],
+    "resolves": [],
+    "seq": null,
+    "statement": "Each project moves to its own GitHub repo, public from the first commit, holding its code at the root, its specs/, its own .stf/export/ plane and its project rules. github.com/cjsy2001/secops-task-factory is public as well, MIT-licensed (made public 2026-10-27). It holds the stf MCP server, skills, hooks and rule templates, packaged as a Claude Code plugin that anyone can install from its marketplace, plus a plane for factory-level work. Its main branch is protected (secrets and plane checks required, PRs only, no force pushes).",
+    "status": "accepted",
+    "supersedes": [
+      "D-004"
+    ],
+    "title": "One public repo per project; the factory repo is public too, as an installable plugin",
+    "updated_at": "2026-10-27T22:22:04Z"
   }
 ]
