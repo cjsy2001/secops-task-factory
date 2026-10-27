@@ -236,7 +236,11 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
         });
       });
       P.supersededBy = {};
-      P.decisions.forEach(function (d) { (d.supersedes || []).forEach(function (id) { P.supersededBy[id] = d.local_id; }); });
+      P.correctedBy = {};
+      P.decisions.forEach(function (d) {
+        (d.supersedes || []).forEach(function (id) { P.supersededBy[id] = d.local_id; });
+        (d.corrects || []).forEach(function (id) { (P.correctedBy[id] = P.correctedBy[id] || []).push(d.local_id); });
+      });
       return P;
     });
   }
@@ -261,13 +265,15 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
     var alts = (d.rejects || []).map(function (id) { return P.byId[id]; }).filter(Boolean);
     var links = [];
     // rejects shows as the "rejected options" list below, unless an id there has no record
-    ["supersedes", "resolves", "rejects"].forEach(function (rel) {
+    ["supersedes", "corrects", "resolves", "rejects"].forEach(function (rel) {
       if (rel === "rejects" && (d.rejects || []).every(function (id) { return P.byId[id]; })) return;
       if ((d[rel] || []).length) links.push('<span><span class="k">' + rel + "</span>" + d[rel].map(function (id) { return idLink(id, P); }).join(" ") + "</span>");
     });
-    var by = (P.mentions[d.local_id] || []).filter(function (id) { return id !== P.supersededBy[d.local_id]; });
+    var fixes = P.correctedBy[d.local_id] || [];
+    var by = (P.mentions[d.local_id] || []).filter(function (id) { return id !== P.supersededBy[d.local_id] && fixes.indexOf(id) < 0; });
     var notes = "";
     if (P.supersededBy[d.local_id]) notes += '<div class="note">Superseded by ' + idLink(P.supersededBy[d.local_id], P) + ".</div>";
+    if (fixes.length) notes += '<div class="note"><b>Corrected by</b> ' + fixes.map(function (id) { return idLink(id, P) + " " + esc((P.byId[id] || {}).title || ""); }).join("; ") + ".</div>";
     if (by.length) notes += '<div class="note">Mentioned in ' + by.map(function (id) { return idLink(id, P) + " " + esc((P.byId[id] || {}).title || ""); }).join("; ") + ".</div>";
     return '<article class="dec" id="' + esc(d.local_id) + '"><div class="top"><span class="lid">' + esc(d.local_id) + "</span>" + pill(d.status) +
       "<h3>" + esc(d.title) + "</h3></div>" + notes +
@@ -277,7 +283,8 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
       (links.length ? '<div class="links">' + links.join("") + "</div>" : "") +
       (alts.length ? '<div><span class="k">rejected options</span><ul class="alts">' + alts.map(function (a) {
         return '<li id="' + esc(a.local_id) + '"><code>' + esc(a.local_id) + "</code> <b>" + esc(a.option) + "</b>: " + esc(a.summary) +
-          (a.tradeoffs ? ' <span class="hint">' + esc(a.tradeoffs) + "</span>" : "") + "</li>";
+          (a.tradeoffs ? ' <span class="hint">' + esc(a.tradeoffs) + "</span>" : "") +
+          ((P.correctedBy[a.local_id] || []).length ? ' <span class="pill s-open">corrected by ' + P.correctedBy[a.local_id].map(function (id) { return idLink(id, P); }).join(" ") + "</span>" : "") + "</li>";
       }).join("") + "</ul></div>" : "") +
       '<div class="hint">' + when(d.created_at) + "</div></article>";
   }

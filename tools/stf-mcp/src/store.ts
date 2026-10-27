@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { StfError } from "./errors.js";
 
 type Db = Database.Database;
 
@@ -20,7 +21,7 @@ export const TABLES: TableSpec[] = [
   { table: "task", file: "tasks.json", orderBy: "seq, ordinal, local_id", json: ["requirements"] },
   { table: "artefact_hash", file: "artefact-hashes.json", orderBy: "seq, local_id, path", json: [] },
   { table: "run", file: "runs.json", orderBy: "started_at, run_key", json: [] },
-  { table: "decision", file: "decisions.json", orderBy: "local_id", json: ["supersedes", "resolves", "rejects"] },
+  { table: "decision", file: "decisions.json", orderBy: "local_id", json: ["supersedes", "resolves", "rejects", "corrects"] },
   { table: "question", file: "questions.json", orderBy: "local_id", json: [] },
   { table: "alternative", file: "alternatives.json", orderBy: "local_id", json: [] },
   { table: "evidence", file: "evidence.json", orderBy: "local_id", json: [] },
@@ -90,8 +91,17 @@ export class Store {
         const rows: Record<string, unknown>[] = t.jsonl
           ? text.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l))
           : JSON.parse(text);
+        const known = new Set((db.prepare(`PRAGMA table_info(${t.table})`).all() as { name: string }[]).map((c) => c.name));
         for (const row of rows) {
           const cols = Object.keys(row);
+          // a newer stf wrote this export: refuse rather than drop the field, which the next export would then erase
+          const unknown = cols.filter((c) => !known.has(c));
+          if (unknown.length) {
+            throw new StfError(
+              "newer_plane",
+              `${t.file} has ${unknown.join(", ")}, which this stf version doesn't know. A newer stf wrote this plane: update the plugin (/plugin marketplace update secops-task-factory) and restart.`,
+            );
+          }
           const values = cols.map((c) => {
             const v = row[c];
             if (t.json.includes(c)) return v === null || v === undefined ? null : JSON.stringify(v);

@@ -229,12 +229,19 @@ export function renderSpecPage(f: Factory, seq: number, data: DashboardData = da
     );
   }
 
+  // corrections point both ways; a record on this page is linked, one elsewhere is named
+  const onPage = new Set([...decisions.map((d) => String(d.local_id)), ...alts.keys()]);
+  const ref = (id: string) => (onPage.has(id) ? `<a href="#${id.toLowerCase()}">${id}</a>` : id);
+  const correctedBy = new Map<string, string[]>();
+  for (const d of data.decisions as Row[]) for (const id of (d.corrects ?? []) as string[]) correctedBy.set(id, [...(correctedBy.get(id) ?? []), String(d.local_id)]);
   const cards = decisions.map((d) => {
     const rej = ((d.rejects ?? []) as string[])
       .filter((a) => alts.has(a))
       .map((a) => `<li id="${a.toLowerCase()}"><b>${a}</b> ${esc(alts.get(a)!.option)}</li>`)
       .join("");
     const res = ((d.resolves ?? []) as string[]).join(", ");
+    const corrects = ((d.corrects ?? []) as string[]).map(ref).join(", ");
+    const by = (correctedBy.get(String(d.local_id)) ?? []).map(ref).join(", ");
     return (
       `<article class="decision" id="${String(d.local_id).toLowerCase()}">` +
       `<header><span class="did">${d.local_id}</span><h3>${esc(d.title)}</h3>` +
@@ -243,6 +250,8 @@ export function renderSpecPage(f: Factory, seq: number, data: DashboardData = da
       `<dl><dt>Why</dt><dd>${linkify(esc(d.rationale))}</dd>` +
       (d.consequences ? `<dt>Consequences</dt><dd>${linkify(esc(d.consequences))}</dd>` : "") +
       (res ? `<dt>Resolves</dt><dd>${res}</dd>` : "") +
+      (corrects ? `<dt>Corrects</dt><dd>${corrects}</dd>` : "") +
+      (by ? `<dt>Corrected by</dt><dd>${by}</dd>` : "") +
       (rej ? `<dt>Rejected</dt><dd><ul class="alts">${rej}</ul></dd>` : "") +
       "</dl></article>"
     );

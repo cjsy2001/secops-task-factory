@@ -80,6 +80,7 @@ CREATE TABLE decision (
   supersedes   TEXT NOT NULL DEFAULT '[]',
   resolves     TEXT NOT NULL DEFAULT '[]',
   rejects      TEXT NOT NULL DEFAULT '[]',
+  corrects     TEXT NOT NULL DEFAULT '[]', -- D-/ALT- records this one corrects; unlike supersedes, they keep their status
   consequences TEXT,
   created_at   TEXT NOT NULL,
   updated_at   TEXT NOT NULL

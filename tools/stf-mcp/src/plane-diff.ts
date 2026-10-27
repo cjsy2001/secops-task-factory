@@ -84,7 +84,10 @@ export function readExportAt(root: string, ref?: string): ExportRows {
   return out;
 }
 
+/** Equal values; a field a newer plugin added (absent before, an empty list now) is not a change either. */
 function same(a: unknown, b: unknown): boolean {
+  const empty = (v: unknown) => v === undefined || (Array.isArray(v) && v.length === 0);
+  if (a === undefined || b === undefined) return empty(a) && empty(b);
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
@@ -135,7 +138,7 @@ function fieldChange(c: TableDiff["changed"][number]): string[] {
 
 function decisionLinks(r: Row): string {
   const links: string[] = [];
-  for (const rel of ["supersedes", "resolves", "rejects"]) {
+  for (const rel of ["supersedes", "corrects", "resolves", "rejects"]) {
     const ids = r[rel];
     if (Array.isArray(ids) && ids.length) links.push(`${rel} ${ids.join(", ")}`);
   }

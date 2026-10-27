@@ -11,9 +11,20 @@ SonarQube?", the answer is a `D-NNN` with its rejected `ALT-NNN`s and `EV-NNN` e
 ## Record a decision
 
 1. For each option that was considered: `stf_capture_alternative {seq, option, summary, tradeoffs, verdict}`.
-2. Settle it: `stf_capture_decision {seq, title, statement, rationale, resolves: [OQ-…], rejects: [ALT-…], supersedes: [D-…], consequences}`.
+2. Settle it: `stf_capture_decision {seq, title, statement, rationale, resolves: [OQ-…], rejects: [ALT-…], supersedes: [D-…], corrects: [D-…/ALT-…], consequences}`.
 3. Back it up: `stf_capture_evidence {seq, claim, source, detail, link, evidences: "D-NNN"}`. The source can be a doc URL, a command and its output, or a `file:line`.
 4. If the decision changes a spec or plan that is already past that phase, run `stf_reopen_phase`. Don't edit silently.
+
+### Supersede or correct?
+
+Plane records are append-only, so a fix is a new decision that points at the old record:
+
+- **`supersedes`**: the old decision no longer holds. It flips to `superseded`. Restate whatever part of it still
+  stands in the new decision, so nothing is lost.
+- **`corrects`**: the old decision or alternative still holds, but a fact in it is wrong or out of date (a renamed
+  path, a rewritten commit SHA, a wrong count). It keeps its status. The viewer, the spec pages and the PR summary show
+  the link from both ends ("corrects D-011" / "Corrected by D-013").
+- To add the link to an existing decision, call `stf_capture_decision` again with its `localId` and every field.
 
 ## Open questions
 

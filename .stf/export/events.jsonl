@@ -42,3 +42,4 @@
 {"at":"2026-09-25T21:57:08Z","id":42,"kind":"decision","run_key":null,"seq":null,"session_id":"5e39367e-66bc-431c-ad22-bf1a77e61343","summary":"D-012: The factory repo keeps its own plane for factory-level work"}
 {"at":"2026-10-27T21:12:49Z","id":43,"kind":"decision","run_key":null,"seq":null,"session_id":"c409af76-dd87-4d17-9132-85362dc32910","summary":"D-013: Commit authors rewritten to the personal email; D-011 and ALT-021 cite a pre-rewrite SHA"}
 {"at":"2026-10-27T22:22:04Z","id":44,"kind":"decision","run_key":null,"seq":null,"session_id":"c409af76-dd87-4d17-9132-85362dc32910","summary":"D-014: One public repo per project; the factory repo is public too, as an installable plugin"}
+{"at":"2026-10-27T22:48:57Z","id":45,"kind":"decision","run_key":null,"seq":null,"session_id":"2d866786-840e-498b-b2aa-a96233902c4b","summary":"D-013: Commit authors rewritten to the personal email; D-011 and ALT-021 cite a pre-rewrite SHA (corrects D-011, ALT-021)"}
