@@ -276,6 +276,7 @@ CLI, run inside a Claude Code session (`! stf …`):
 ```
 stf status [seq]        stf verify [seq] [--dry-run]     stf dashboard     stf pages
 stf init [dir]          stf import-tasks <seq>           stf export        stf charter <slug> <title> <summary>
+stf plane-diff <base> [head]   what a change does to the plane, as Markdown (for a PR comment)
 stf new-project <dir> --name <kebab> --description <text> [--title …] [--private] [--no-azure] [--license mit|none]
 ```
 

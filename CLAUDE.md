@@ -69,6 +69,7 @@ make dashboard  # read-only HTML view of the plane → .stf/dashboard.html (any 
 stf pages       # any repo: rebuild the status pages (hub, dashboard, spec pages); /stf:pages republishes them
 stf new-project <dir> --name <kebab> --description "…"   # scaffold a project repo; /stf:new-project also publishes it
 make roundtrip  # export re-renders byte-identically
+node tools/stf-mcp/dist/cli.js plane-diff origin/main   # a branch's plane changes as Markdown (CI posts it on each PR)
 make gitleaks   # full-history secret scan (docker)
 cd tools/stf-mcp && npx vitest run tests/factory.test.ts -t "handoff"   # single test
 ```

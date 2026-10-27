@@ -42,3 +42,44 @@ jobs:
             node "$RUNNER_TEMP/plugin/scripts/run.mjs" recall)
           echo "$out"
           echo "$out" | grep -q "where this project left off"
+
+  # What the PR does to the plane, in words: one PR comment (edited in place on each push) plus the run's step summary.
+  plane-summary:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tools/stf-mcp/package-lock.json
+      - run: cd tools/stf-mcp && npm ci && npm run build
+      - name: render the plane diff (base branch → this PR merged into it)
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          node tools/stf-mcp/dist/cli.js plane-diff "origin/$BASE_REF" HEAD > "$RUNNER_TEMP/plane.md"
+          cat "$RUNNER_TEMP/plane.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: post or update the PR comment
+        # a fork's token can't comment; its summary is still in the run's step summary
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          id=$(gh api --paginate "repos/$REPO/issues/$PR/comments" -q '.[] | select(.body | startswith("<!-- stf-plane-summary -->")) | .id' | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@"$RUNNER_TEMP/plane.md" > /dev/null
+            echo "updated comment $id"
+          elif grep -q '^No plane changes\.$' "$RUNNER_TEMP/plane.md"; then
+            echo "no plane changes and no earlier comment: nothing to post"
+          else
+            gh pr comment "$PR" -R "$REPO" --body-file "$RUNNER_TEMP/plane.md"
+          fi
