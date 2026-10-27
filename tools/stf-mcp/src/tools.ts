@@ -194,7 +194,7 @@ export const allTools: ToolDef[] = [
   {
     name: "stf_capture_decision",
     group: "knowledge",
-    description: "Record a decision (D-NNN). resolves[] flips open questions to resolved; rejects[] flips alternatives to rejected; supersedes[] retires older decisions.",
+    description: "Record a decision (D-NNN). resolves[] flips open questions to resolved; rejects[] flips alternatives to rejected; supersedes[] retires older decisions; corrects[] points at decisions or alternatives (D-/ALT-) this one corrects without retiring them.",
     input: {
       localId: z.string().optional().describe("Pass to update an existing D-NNN; omit to allocate"),
       seq: optSeq,
@@ -204,6 +204,7 @@ export const allTools: ToolDef[] = [
       resolves: z.array(z.string()).optional(),
       rejects: z.array(z.string()).optional(),
       supersedes: z.array(z.string()).optional(),
+      corrects: z.array(z.string()).optional().describe("D-/ALT- ids this decision corrects; they keep their status (use supersedes to retire a decision)"),
       consequences: z.string().optional(),
     },
     run: (f, a) => f.captureDecision(a),

@@ -1,6 +1,7 @@
 [
   {
     "consequences": null,
+    "corrects": [],
     "created_at": "2026-09-23T18:01:42Z",
     "local_id": "D-001",
     "rationale": "Operator choice at repo bootstrap (2026-09-23).",
@@ -18,6 +19,7 @@
   },
   {
     "consequences": null,
+    "corrects": [],
     "created_at": "2026-09-23T18:01:42Z",
     "local_id": "D-002",
     "rationale": "Operator choice: zero infra, state travels with git, and the server can still enforce the guards a files-only approach cannot.",
@@ -35,6 +37,7 @@
   },
   {
     "consequences": null,
+    "corrects": [],
     "created_at": "2026-09-23T18:01:42Z",
     "local_id": "D-003",
     "rationale": "Operator choice at bootstrap; spec 001 Q-003 revisits publishing individual projects publicly.",
@@ -51,6 +54,7 @@
   },
   {
     "consequences": "Next steps: (2) package the factory as a plugin; (3) add an optional explicit seq to stf_charter_spec so specs keep 001-004; (4) re-charter each spec in its new repo and re-capture its questions and decisions (their IDs will be reissued). D-001 (Azure) and D-002 (plane design) stay factory-wide. Until the move, CLAUDE.md, README, .claude/rules path globs (projects/**) and spec Assumptions that name secops-task-factory or projects/<name> are stale, and must be updated when each spec moves. Recall and memory are no longer shared across projects. Every public repo needs gitleaks (pre-commit hook and CI) active from its first commit.",
+    "corrects": [],
     "created_at": "2026-09-24T23:41:21Z",
     "local_id": "D-004",
     "rationale": "stf's evidence checks only work inside a single git root: repoRelative refuses paths outside the root, and commitExists/inGitHistory run git in the plane's own repo. The plane therefore has to live with the code it verifies. Public project repos give recruiters visible history, and GitHub code scanning is free for public repos (spec 001 Assumptions). This is the cheapest moment to move: every spec is at clarify, with 0 tasks, 0 artefact hashes and no projects/ folder. After implementation starts, extraction would rewrite recorded commit shas and move artefact paths.",
@@ -75,6 +79,7 @@
   },
   {
     "consequences": "Don't propose embeddings for recall or search. If retrieval quality becomes a problem, improve tags, titles and FTS queries first.",
+    "corrects": [],
     "created_at": "2026-09-25T21:56:49Z",
     "local_id": "D-005",
     "rationale": "Operator scope call (2026-09-25): honest, local, simple tooling over AI-factory features. Full-text memory is enough as long as it works across sessions, and its results are reproducible from the committed export.",
@@ -91,6 +96,7 @@
   },
   {
     "consequences": "Cross-repo views (e.g. a portfolio hub) are built from each repo's committed export or its published pages, never from a shared live service.",
+    "corrects": [],
     "created_at": "2026-09-25T21:56:51Z",
     "local_id": "D-006",
     "rationale": "Operator scope call (2026-09-25). Keeps D-002's properties: zero infrastructure, state travels with git, and every evidence claim can be re-checked from a checkout.",
@@ -107,6 +113,7 @@
   },
   {
     "consequences": null,
+    "corrects": [],
     "created_at": "2026-09-25T21:56:54Z",
     "local_id": "D-007",
     "rationale": "Operator scope call (2026-09-25). A server that rewrites unreviewed content would undermine the refusals and hashed evidence the factory exists for.",
@@ -123,6 +130,7 @@
   },
   {
     "consequences": null,
+    "corrects": [],
     "created_at": "2026-09-25T21:56:56Z",
     "local_id": "D-008",
     "rationale": "Operator (2026-09-25) wanted a simple view instead of reading JSON (Roadmap P1-7). It reads through the store's pure render, so it can't change the plane.",
@@ -139,6 +147,7 @@
   },
   {
     "consequences": "A repo turns status pages on by creating .stf/pages.json and off by deleting it. devsecops-pipeline dropped scripts/status-pages and its project hook (devsecops-pipeline#2).",
+    "corrects": [],
     "created_at": "2026-09-25T21:56:59Z",
     "local_id": "D-009",
     "rationale": "One implementation for every project repo instead of drifting copies; TypeScript with marked removes the Python/uv dependency. On devsecops-pipeline spec 001 the port reproduced the Python output's ids and in-page links exactly.",
@@ -156,6 +165,7 @@
   },
   {
     "consequences": "A plugin older than the moved column can't load a plane that has it, so every repo using stf needs the update. Spec 001 is marked moved to cjsy2001/devsecops-pipeline#1.",
+    "corrects": [],
     "created_at": "2026-09-25T21:57:02Z",
     "local_id": "D-010",
     "rationale": "Operator (2026-09-25): a real moved state, linked to D-004, with history intact. Without it the old rows read as live work at clarify and could still be written to.",
@@ -174,6 +184,7 @@
   },
   {
     "consequences": "Changes to the standard project setup are made once, in tools/stf-mcp/src/templates/project, and reach every later project.",
+    "corrects": [],
     "created_at": "2026-09-25T21:57:06Z",
     "local_id": "D-011",
     "rationale": "Operator (2026-09-25). The scaffold is devsecops-pipeline's first commit made generic; rendered for devsecops-pipeline it matches a8ece62 except for the project text, one generic security bullet and the status-page .gitignore lines.",
@@ -191,6 +202,7 @@
   },
   {
     "consequences": "Recording a factory-wide decision includes updating the templates or rules that carry it to projects.",
+    "corrects": [],
     "created_at": "2026-09-25T21:57:08Z",
     "local_id": "D-012",
     "rationale": "Operator (2026-09-25). This is the only place factory-wide decisions are recorded, factory sessions keep recall, and CI's round-trip and verify checks run against a real plane.",
@@ -207,6 +219,10 @@
   },
   {
     "consequences": "Read a8ece62 in D-011 and ALT-021 as 05dc3cd. The plane recorded no commit SHAs in checkpoints or evidence, so stf_verify is unaffected. GitHub's PR refs (9 in secops-task-factory, 2 in devsecops-pipeline) still point at the pre-rewrite commits. That was accepted rather than asking GitHub Support to purge them.",
+    "corrects": [
+      "D-011",
+      "ALT-021"
+    ],
     "created_at": "2026-10-27T21:12:49Z",
     "local_id": "D-013",
     "rationale": "Operator (2026-10-27): the repos are a public personal portfolio, and the employer email shouldn't be in their history. Plane records are append-only, so the old SHA is noted here instead of editing D-011. a8ece62 now resolves only through devsecops-pipeline's PR refs and the local pre-rewrite backup.",
@@ -217,10 +233,11 @@
     "status": "accepted",
     "supersedes": [],
     "title": "Commit authors rewritten to the personal email; D-011 and ALT-021 cite a pre-rewrite SHA",
-    "updated_at": "2026-10-27T21:12:49Z"
+    "updated_at": "2026-10-27T22:48:57Z"
   },
   {
     "consequences": "Supersedes D-004, whose project rule this restates; only the factory's visibility changes. Install docs drop the \"private repo, gh auth first\" notes, and the project scaffold template no longer calls the factory private. The live viewer and docs/using-stf.md are served from this repo by GitHub Pages. GitHub's old PR refs keep the pre-rewrite author email, as accepted in D-013.",
+    "corrects": [],
     "created_at": "2026-10-27T22:22:04Z",
     "local_id": "D-014",
     "rationale": "Operator (2026-10-27) asked for the factory to be usable in other people's repos. Claude Code installs a plugin by cloning its marketplace repo, so a private factory can't be installed by anyone outside it. D-004's per-project reasoning still holds and is carried over unchanged: stf's evidence checks only work inside one git root, so each plane lives with the code it verifies. Before the switch, the full history was scanned with gitleaks (no leaks) and commit authors were rewritten to the personal email (D-013).",

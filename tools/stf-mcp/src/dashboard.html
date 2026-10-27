@@ -241,7 +241,7 @@ function renderKnowledge(){
   var ds=D.decisions.filter(mine).sort(function(a,b){return b.local_id.localeCompare(a.local_id);});
   document.getElementById("dhint").textContent=ds.length+" recorded";
   document.getElementById("decisions").innerHTML=ds.length?'<div class="list">'+ds.map(function(d){
-    var links=[];if(d.resolves&&d.resolves.length)links.push("resolves "+d.resolves.join(", "));if(d.supersedes&&d.supersedes.length)links.push("supersedes "+d.supersedes.join(", "));if(d.rejects&&d.rejects.length)links.push("rejects "+d.rejects.join(", "));
+    var links=[];if(d.resolves&&d.resolves.length)links.push("resolves "+d.resolves.join(", "));if(d.supersedes&&d.supersedes.length)links.push("supersedes "+d.supersedes.join(", "));if(d.corrects&&d.corrects.length)links.push("corrects "+d.corrects.join(", "));if(d.rejects&&d.rejects.length)links.push("rejects "+d.rejects.join(", "));
     return '<div class="item"><div class="top"><span class="mono">'+esc(d.local_id)+'</span>'+pill(d.status)+'<span class="sub">'+esc(specName(d.seq))+'</span></div><div><strong>'+esc(d.title)+'</strong></div>'+(links.length?'<div class="sub">'+esc(links.join(" · "))+'</div>':'')+'</div>';}).join("")+'</div>':empty("No decisions for this filter.");
   var hs=D.handoffs.filter(mine).sort(function(a,b){return b.local_id.localeCompare(a.local_id);});
   document.getElementById("handoffs").innerHTML=hs.length?'<div class="list">'+hs.map(function(h){

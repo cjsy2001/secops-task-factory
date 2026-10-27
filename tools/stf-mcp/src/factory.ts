@@ -722,6 +722,7 @@ export class Factory {
     resolves?: string[];
     rejects?: string[];
     supersedes?: string[];
+    corrects?: string[];
     consequences?: string;
   }): Row {
     return this.store.mutate((db) => {
@@ -729,9 +730,18 @@ export class Factory {
       const resolves = a.resolves ?? [];
       const rejects = a.rejects ?? [];
       const supersedes = a.supersedes ?? [];
+      const corrects = a.corrects ?? [];
       this.requireRefs("question", resolves);
       this.requireRefs("alternative", rejects);
       this.requireRefs("decision", supersedes);
+      if (a.localId && corrects.includes(a.localId)) throw new StfError("self_ref", `${a.localId} can't correct itself.`);
+      for (const id of corrects) {
+        // a correction points at a decision or an alternative that still stands; it never changes their status
+        const table = /^D-/.test(id) ? "decision" : /^ALT-/.test(id) ? "alternative" : null;
+        if (!table || !db.prepare(`SELECT 1 FROM ${table} WHERE local_id = ?`).get(id)) {
+          throw new StfError("unknown_ref", `${id} is not a decision or an alternative in this plane; corrects[] takes D-NNN and ALT-NNN ids.`);
+        }
+      }
       const secret = findSecret(a.statement, a.rationale, a.consequences);
       if (secret) throw new StfError("secret_detected", `Refusing to persist what looks like a ${secret}. The plane is committed to git.`);
       const at = this.now();
@@ -739,7 +749,7 @@ export class Factory {
       const id = a.localId ?? this.nextId("decision", "D");
       if (!/^D-\d{3,}$/.test(id)) throw new StfError("bad_id", "Decision ids look like D-001.");
       if (existing) {
-        db.prepare("UPDATE decision SET seq=?, title=?, statement=?, rationale=?, supersedes=?, resolves=?, rejects=?, consequences=?, updated_at=? WHERE local_id=?").run(
+        db.prepare("UPDATE decision SET seq=?, title=?, statement=?, rationale=?, supersedes=?, resolves=?, rejects=?, corrects=?, consequences=?, updated_at=? WHERE local_id=?").run(
           a.seq ?? null,
           a.title,
           a.statement,
@@ -747,19 +757,20 @@ export class Factory {
           JSON.stringify(supersedes),
           JSON.stringify(resolves),
           JSON.stringify(rejects),
+          JSON.stringify(corrects),
           a.consequences ?? null,
           at,
           id,
         );
       } else {
         db.prepare(
-          "INSERT INTO decision (local_id, seq, title, statement, rationale, status, supersedes, resolves, rejects, consequences, created_at, updated_at) VALUES (?,?,?,?,?,'accepted',?,?,?,?,?,?)",
-        ).run(id, a.seq ?? null, a.title, a.statement, a.rationale, JSON.stringify(supersedes), JSON.stringify(resolves), JSON.stringify(rejects), a.consequences ?? null, at, at);
+          "INSERT INTO decision (local_id, seq, title, statement, rationale, status, supersedes, resolves, rejects, corrects, consequences, created_at, updated_at) VALUES (?,?,?,?,?,'accepted',?,?,?,?,?,?,?)",
+        ).run(id, a.seq ?? null, a.title, a.statement, a.rationale, JSON.stringify(supersedes), JSON.stringify(resolves), JSON.stringify(rejects), JSON.stringify(corrects), a.consequences ?? null, at, at);
       }
       for (const q of resolves) db.prepare("UPDATE question SET status='resolved', resolution=?, resolved_by=?, updated_at=? WHERE local_id=?").run(a.statement, id, at, q);
       for (const alt of rejects) db.prepare("UPDATE alternative SET verdict='rejected', updated_at=? WHERE local_id=?").run(at, alt);
       for (const d of supersedes) db.prepare("UPDATE decision SET status='superseded', updated_at=? WHERE local_id=?").run(at, d);
-      this.event(a.seq ?? null, "decision", `${id}: ${a.title}${resolves.length ? ` (resolves ${resolves.join(", ")})` : ""}`);
+      this.event(a.seq ?? null, "decision", `${id}: ${a.title}${resolves.length ? ` (resolves ${resolves.join(", ")})` : ""}${corrects.length ? ` (corrects ${corrects.join(", ")})` : ""}`);
       return db.prepare("SELECT * FROM decision WHERE local_id = ?").get(id) as Row;
     });
   }
