@@ -204,5 +204,19 @@
     "supersedes": [],
     "title": "The factory repo keeps its own plane for factory-level work",
     "updated_at": "2026-09-25T21:57:08Z"
+  },
+  {
+    "consequences": "Read a8ece62 in D-011 and ALT-021 as 05dc3cd. The plane recorded no commit SHAs in checkpoints or evidence, so stf_verify is unaffected. GitHub's PR refs (9 in secops-task-factory, 2 in devsecops-pipeline) still point at the pre-rewrite commits. That was accepted rather than asking GitHub Support to purge them.",
+    "created_at": "2026-10-27T21:12:49Z",
+    "local_id": "D-013",
+    "rationale": "Operator (2026-10-27): the repos are a public personal portfolio, and the employer email shouldn't be in their history. Plane records are append-only, so the old SHA is noted here instead of editing D-011. a8ece62 now resolves only through devsecops-pipeline's PR refs and the local pre-rewrite backup.",
+    "rejects": [],
+    "resolves": [],
+    "seq": null,
+    "statement": "On 2026-10-27 the commit authors in secops-task-factory, devsecops-pipeline and ctf-writeups were rewritten to the operator's personal email with git filter-repo, and the result was force-pushed to main. The file trees are unchanged, but every commit SHA changed. devsecops-pipeline's scaffold commit, which D-011 and ALT-021 cite as a8ece62, is now 05dc3cd. D-011 itself still stands.",
+    "status": "accepted",
+    "supersedes": [],
+    "title": "Commit authors rewritten to the personal email; D-011 and ALT-021 cite a pre-rewrite SHA",
+    "updated_at": "2026-10-27T21:12:49Z"
   }
 ]
