@@ -4,6 +4,7 @@ import { writeDashboard } from "./dashboard.js";
 import { Factory } from "./factory.js";
 import { writeHub } from "./hub.js";
 import { pagesHook, refreshPages } from "./pages.js";
+import { diffPlane, readExportAt, renderPlaneDiff } from "./plane-diff.js";
 import { newProject } from "./new-project.js";
 import { initPlane, resolveRoot } from "./root.js";
 import { writeSpecPage } from "./spec-page.js";
@@ -19,6 +20,7 @@ const USAGE = `stf <command>
   verify [seq] [--dry-run]
   import-tasks <seq>
   export                  re-render .stf/export from the loaded state (round-trip check)
+  plane-diff <base> [head] what a change does to the plane, as Markdown for a PR comment (head defaults to the working tree)
   charter <slug> <title> <summary>
   move <seq> <owner/repo> <targetSeq> <D-NNN> <reason>   mark a spec as moved to another repo's plane
   new-project <dir> --name <kebab> --description <text> [--title <spec title>] [--private] [--no-azure]
@@ -73,6 +75,16 @@ async function main(argv: string[]): Promise<number> {
       visibility: rest.includes("--private") ? "private" : "public",
     });
     process.stdout.write(JSON.stringify(r, null, 2) + "\n");
+    return 0;
+  }
+  if (cmd === "plane-diff") {
+    const [base, head] = rest;
+    if (!base) {
+      process.stderr.write(USAGE + "\n");
+      return 2;
+    }
+    const root = resolveRoot();
+    process.stdout.write(renderPlaneDiff(diffPlane(readExportAt(root, base), readExportAt(root, head)), { base, head }));
     return 0;
   }
   if (cmd === "init") {
