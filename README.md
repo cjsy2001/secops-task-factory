@@ -19,7 +19,7 @@ Each project gets its own repo and plane once it moves out of this one (D-004).
 | Malware analysis sandbox | Docker isolation · Python · auditd/eBPF · YARA · JSON verdicts (benign samples only) | [specs/003-malware-sandbox](specs/003-malware-sandbox/spec.md) | spec: clarify |
 | Zero-trust cloud audit tool | Python · Azure SDK · Microsoft Graph · Event Grid · Functions · webhooks | [specs/004-zero-trust-audit](specs/004-zero-trust-audit/spec.md) | spec: clarify |
 
-_Live status: `make status` (JSON) or `make dashboard` (an HTML page in `.stf/dashboard.html`); the table above is a snapshot._
+_Live status: the [plane viewer](https://cjsy2001.github.io/secops-task-factory/viewer/) reads `main` on every load (any public stf repo: `?repo=owner/name`). Locally: `make status` (JSON) or `make dashboard`. The table above is a snapshot._
 
 ## How the factory works
 

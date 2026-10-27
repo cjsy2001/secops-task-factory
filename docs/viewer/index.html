@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>stf plane viewer</title>
+<meta name="description" content="Live, read-only view of an stf plane: specs, tasks, decisions and artefacts, read straight from a public GitHub repo.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous"></script>
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --sunk:#E8ECF0; --ink:#15202B; --muted:#56636F; --rule:#D3DAE1;
+  --accent:#2B55C9; --accent-soft:#E3EAFB; --gate:#9A6412; --gate-soft:#F8EEDC;
+  --ok:#1D7348; --ok-soft:#E0F1E7; --bad:#B0281C; --bad-soft:#F9E3E0; --idle:#8A96A3;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0E1319; --surface:#151C24; --sunk:#1C252F; --ink:#E4E9EE; --muted:#96A3B0; --rule:#2B3542;
+    --accent:#86A2FF; --accent-soft:#1D2944; --gate:#E2AD55; --gate-soft:#33291A;
+    --ok:#5CC98E; --ok-soft:#17301F; --bad:#F08A7E; --bad-soft:#3A1D1A; --idle:#6B7885;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0E1319; --surface:#151C24; --sunk:#1C252F; --ink:#E4E9EE; --muted:#96A3B0; --rule:#2B3542;
+  --accent:#86A2FF; --accent-soft:#1D2944; --gate:#E2AD55; --gate-soft:#33291A;
+  --ok:#5CC98E; --ok-soft:#17301F; --bad:#F08A7E; --bad-soft:#3A1D1A; --idle:#6B7885;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 56px}
+.page{max-width:1180px;margin:0 auto}
+a{color:var(--accent)}
+header{padding-block:28px 18px;border-bottom:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:clamp(24px,4vw,34px);font-weight:700;margin-top:6px;overflow-wrap:anywhere}
+h2{font-size:19px;font-weight:600}
+h3{font-size:16px;font-weight:600}
+form.repo{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+form.repo input{font-family:var(--mono);font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink);min-width:0}
+form.repo input[name=repo]{width:min(260px,100%)} form.repo input[name=ref]{width:110px}
+button,.btn{font-family:var(--mono);font-size:12.5px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer;text-decoration:none;display:inline-block}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:focus-visible,.btn:focus-visible,.tab:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.crumbs{font-family:var(--mono);font-size:12.5px;margin-top:16px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-block:20px}
+.stat{background:var(--surface);padding:14px 16px;display:grid;gap:2px}
+.stat .n{font-family:var(--display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--muted)}
+.stat.warn .n{color:var(--gate)} .stat.bad .n{color:var(--bad)}
+section{margin-block:28px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.hint{font-size:13px;color:var(--muted)}
+.specs{display:grid;gap:10px}
+.spec{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr);color:inherit;text-decoration:none}
+a.spec:hover{border-color:var(--accent)}
+@media (min-width:900px){.spec{grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) minmax(0,.9fr);align-items:center}}
+.spec .id{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.spec .t{font-weight:600;margin-top:2px}
+.spec.moved{background:var(--sunk)}
+.track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.step{display:grid;gap:4px;font-size:11.5px;color:var(--muted);text-align:center}
+.step i{display:block;height:6px;border-radius:3px;background:var(--sunk)}
+.step.past i{background:var(--ok)} .step.cur i{background:var(--accent)} .step.cur{color:var(--ink);font-weight:600}
+.step.gated i{background:var(--gate)}
+.meta{display:grid;gap:4px;font-size:13px}
+.meta div{display:flex;justify-content:space-between;gap:8px}
+.meta .k{color:var(--muted)}
+.bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--sunk);margin-top:2px}
+.bar span{display:block}
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.s-pending{color:var(--idle)} .s-in_progress{color:var(--accent)} .s-blocked{color:var(--bad)} .s-done{color:var(--ok)} .s-cancelled{color:var(--idle);text-decoration:line-through}
+.s-open{color:var(--gate)} .s-resolved,.s-accepted,.s-completed,.s-picked_up,.s-chosen,.s-active,.s-verified{color:var(--ok)} .s-failed{color:var(--bad)} .s-sent{color:var(--accent)} .s-superseded,.s-archived,.s-rejected,.s-done-h{color:var(--idle)}
+.grid2{display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:8px 12px;border-bottom:1px solid var(--rule)}
+th{font-family:var(--display);font-weight:600;font-size:12.5px;background:var(--sunk);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.mono{font-family:var(--mono);font-size:12.5px}
+td.mono{white-space:nowrap}
+tr.phase td{background:var(--sunk);font-family:var(--mono);font-size:12px;color:var(--muted)}
+td details summary{cursor:pointer;color:var(--muted);font-size:12.5px}
+td details p{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.empty{background:var(--surface);border:1px dashed var(--rule);border-radius:8px;padding:16px;color:var(--muted);font-size:14px}
+.list{background:var(--surface);border:1px solid var(--rule);border-radius:8px}
+.item{padding:10px 14px;border-bottom:1px solid var(--rule);display:grid;gap:4px}
+.item:last-child{border-bottom:0}
+.item .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.item .sub{font-size:13px;color:var(--muted)}
+.feed .item{grid-template-columns:130px minmax(0,1fr);gap:4px 12px}
+@media (max-width:560px){.feed .item{grid-template-columns:1fr}}
+.feed time{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.kind{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--rule);margin-block:20px 18px}
+.tab{font-family:var(--display);font-weight:600;font-size:14px;padding:8px 12px;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-left:4px}
+.dec{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:grid;gap:8px;margin-bottom:10px;scroll-margin-top:16px}
+.dec:target{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.dec .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.dec .lid{font-family:var(--mono);font-size:13px;font-weight:500}
+.dec p{margin:0;overflow-wrap:anywhere}
+.dec .why{color:var(--muted);font-size:14px}
+.dec .k{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-right:6px}
+.links{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.note{background:var(--gate-soft);border-left:3px solid var(--gate);padding:6px 10px;border-radius:4px;font-size:13.5px}
+.alts{margin:0;padding-left:18px;font-size:13.5px}
+.alts li{margin-block:4px}
+.doc{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px 22px 20px;overflow-wrap:anywhere}
+.doc table{display:block;overflow-x:auto}
+.doc pre{background:var(--sunk);padding:10px 12px;border-radius:6px;overflow-x:auto}
+.doc pre code{background:none;padding:0}
+.doc h1{font-size:26px;margin-top:18px} .doc h2{margin-top:26px} .doc h3{margin-top:20px}
+.err{background:var(--bad-soft);border:1px solid var(--bad);color:var(--ink);border-radius:8px;padding:14px 16px;margin-top:24px}
+.loading{color:var(--muted);padding:24px 0}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div>
+    <div class="eyebrow">stf plane · live, read-only</div>
+    <h1 id="title">stf plane viewer</h1>
+  </div>
+  <form class="repo" id="repo-form" aria-label="Choose a repository">
+    <input name="repo" aria-label="Repository (owner/name)" placeholder="owner/name" spellcheck="false" autocomplete="off">
+    <input name="ref" aria-label="Branch, tag or commit" placeholder="main" spellcheck="false" autocomplete="off">
+    <button class="primary" type="submit">View</button>
+  </form>
+</header>
+<main id="app"><p class="loading">Loading the plane…</p></main>
+<footer>Read straight from the repo's committed <code>.stf/export/</code> and <code>specs/</code>: what you see is what <code id="foot-ref">main</code> holds right now. Nothing here can change the plane.</footer>
+</div>
+
+<script>
+"use strict";
+(function () {
+  var FILES = ["specs.json", "tasks.json", "decisions.json", "questions.json", "alternatives.json", "evidence.json",
+    "artefact-hashes.json", "runs.json", "handoffs.json", "memories.json", "events.jsonl"];
+  var PHASES = ["specify", "clarify", "plan", "tasks", "analyze", "done"];
+  // labels for the documents a spec can record; anything else is shown by its file name
+  var DOC_LABELS = { "spec.md": "Spec", "plan.md": "Plan", "research.md": "Research", "data-model.md": "Data model", "tasks.md": "tasks.md" };
+  var DOC_ORDER = ["spec.md", "plan.md", "research.md", "data-model.md", "tasks.md"];
+  // the file each NEXT phase edits; stf verify skips drift on it, and so does this page
+  var PHASE_FILE = { specify: "spec.md", clarify: "spec.md", plan: "plan.md", tasks: "tasks.md" };
+  var ID_RE = /\b(?:D|ALT|OQ|EV|MEM|H)-\d{3}\b/g;
+
+  // ---------- where to read from ----------
+  function defaultRepo() {
+    var m = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i);
+    var seg = location.pathname.split("/").filter(Boolean)[0];
+    return m && seg ? m[1] + "/" + seg : "cjsy2001/secops-task-factory";
+  }
+  var q = new URLSearchParams(location.search);
+  var REPO = (q.get("repo") || defaultRepo()).trim();
+  var REF = (q.get("ref") || "main").trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(REPO)) REPO = defaultRepo();
+  if (!/^[\w./-]+$/.test(REF)) REF = "main";
+  var RAW = "https://raw.githubusercontent.com/" + REPO + "/" + encodeURIComponent(REF).replace(/%2F/g, "/") + "/";
+  var GH = "https://github.com/" + REPO;
+
+  var form = document.getElementById("repo-form");
+  form.repo.value = REPO; form.ref.value = REF;
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var p = new URLSearchParams({ repo: form.repo.value.trim(), ref: form.ref.value.trim() || "main" });
+    location.href = location.pathname + "?" + p.toString();
+  });
+  document.getElementById("foot-ref").textContent = REPO + "@" + REF;
+
+  // ---------- small helpers ----------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
+  }
+  function pad(n) { return n == null ? "—" : String(n).padStart(3, "0"); }
+  function pill(status, cls) { return '<span class="pill s-' + esc(cls || status) + '">' + esc(String(status).replace(/_/g, " ")) + "</span>"; }
+  // in-page links change only the hash: the query (repo, ref) stays, and the plane isn't fetched again
+  function route(path) { return "#" + path; }
+  function when(t) { return t ? esc(String(t).replace("T", " ").replace(/:\d\dZ$/, "Z").replace("Z", " UTC")) : ""; }
+  /** Plane text with its IDs turned into links to where they're shown. */
+  function linkIds(text, P) {
+    return esc(text).replace(ID_RE, function (id) { return idLink(id, P); });
+  }
+  function idLink(id, P) {
+    var href = null;
+    if (/^D-/.test(id)) { var d = P.byId[id]; if (d) href = route(d.seq == null ? "/factory/" + id : "/spec/" + pad(d.seq) + "/decisions/" + id); }
+    else if (/^ALT-/.test(id)) { var a = P.byId[id]; if (a) href = route(a.seq == null ? "/factory/" + id : "/spec/" + pad(a.seq) + "/decisions/" + id); }
+    else if (/^OQ-/.test(id)) { var o = P.byId[id]; if (o) href = route(o.seq == null ? "/factory" : "/spec/" + pad(o.seq) + "/questions"); }
+    return href ? '<a href="' + esc(href) + '"><code>' + esc(id) + "</code></a>" : "<code>" + esc(id) + "</code>";
+  }
+
+  function getText(path) {
+    return fetch(RAW + path, { cache: "no-cache" }).then(function (r) {
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error(path + ": HTTP " + r.status);
+      return r.text();
+    });
+  }
+
+  // ---------- the plane, as rows plus a few indexes ----------
+  function load() {
+    return Promise.all(FILES.map(function (f) { return getText(".stf/export/" + f); })).then(function (texts) {
+      if (texts[0] == null) {
+        throw new Error("No stf plane at " + REPO + "@" + REF + " (.stf/export/specs.json is missing). Is the repo public, and is the branch right?");
+      }
+      var P = { byId: {}, mentions: {} };
+      FILES.forEach(function (f, i) {
+        var t = texts[i] || "";
+        var key = f.replace(/\.jsonl?$/, "").replace("-", "_");
+        P[key] = !t.trim() ? [] : f.endsWith(".jsonl") ? t.split("\n").filter(function (l) { return l.trim(); }).map(JSON.parse) : JSON.parse(t);
+      });
+      P.decisions.concat(P.alternatives, P.questions, P.evidence).forEach(function (r) { P.byId[r.local_id] = r; });
+      // who mentions whom: corrections like "D-013 notes D-011's old SHA" become visible on D-011
+      P.decisions.forEach(function (d) {
+        var text = [d.statement, d.rationale, d.consequences].join(" ");
+        var ids = (text.match(ID_RE) || []).concat(d.supersedes || []);
+        ids.forEach(function (id) {
+          if (id === d.local_id) return;
+          (P.mentions[id] = P.mentions[id] || []);
+          if (P.mentions[id].indexOf(d.local_id) < 0) P.mentions[id].push(d.local_id);
+        });
+      });
+      P.supersededBy = {};
+      P.decisions.forEach(function (d) { (d.supersedes || []).forEach(function (id) { P.supersededBy[id] = d.local_id; }); });
+      return P;
+    });
+  }
+
+  // ---------- pieces ----------
+  function track(s) {
+    var cur = PHASES.indexOf(s.phase);
+    return '<div class="track" aria-label="Lifecycle: next phase ' + esc(s.phase) + '">' + PHASES.map(function (p, i) {
+      var cls = i < cur ? "past" : i === cur ? (s.gate && p === "analyze" ? "cur gated" : "cur") : "";
+      if (s.phase === "done") cls = "past";
+      return '<div class="step ' + cls + '"><i></i>' + esc(p) + "</div>";
+    }).join("") + "</div>";
+  }
+  function taskBar(ts) {
+    var n = ts.length || 1;
+    var c = function (st) { return ts.filter(function (t) { return t.status === st; }).length; };
+    return '<div class="bar" aria-hidden="true"><span style="width:' + (100 * c("done") / n) + '%;background:var(--ok)"></span>' +
+      '<span style="width:' + (100 * c("in_progress") / n) + '%;background:var(--accent)"></span>' +
+      '<span style="width:' + (100 * c("blocked") / n) + '%;background:var(--bad)"></span></div>';
+  }
+  function decisionCard(d, P) {
+    var alts = (d.rejects || []).map(function (id) { return P.byId[id]; }).filter(Boolean);
+    var links = [];
+    // rejects shows as the "rejected options" list below, unless an id there has no record
+    ["supersedes", "resolves", "rejects"].forEach(function (rel) {
+      if (rel === "rejects" && (d.rejects || []).every(function (id) { return P.byId[id]; })) return;
+      if ((d[rel] || []).length) links.push('<span><span class="k">' + rel + "</span>" + d[rel].map(function (id) { return idLink(id, P); }).join(" ") + "</span>");
+    });
+    var by = (P.mentions[d.local_id] || []).filter(function (id) { return id !== P.supersededBy[d.local_id]; });
+    var notes = "";
+    if (P.supersededBy[d.local_id]) notes += '<div class="note">Superseded by ' + idLink(P.supersededBy[d.local_id], P) + ".</div>";
+    if (by.length) notes += '<div class="note">Mentioned in ' + by.map(function (id) { return idLink(id, P) + " " + esc((P.byId[id] || {}).title || ""); }).join("; ") + ".</div>";
+    return '<article class="dec" id="' + esc(d.local_id) + '"><div class="top"><span class="lid">' + esc(d.local_id) + "</span>" + pill(d.status) +
+      "<h3>" + esc(d.title) + "</h3></div>" + notes +
+      "<p>" + linkIds(d.statement, P) + "</p>" +
+      '<p class="why"><span class="k">why</span>' + linkIds(d.rationale, P) + "</p>" +
+      (d.consequences ? '<p class="why"><span class="k">so</span>' + linkIds(d.consequences, P) + "</p>" : "") +
+      (links.length ? '<div class="links">' + links.join("") + "</div>" : "") +
+      (alts.length ? '<div><span class="k">rejected options</span><ul class="alts">' + alts.map(function (a) {
+        return '<li id="' + esc(a.local_id) + '"><code>' + esc(a.local_id) + "</code> <b>" + esc(a.option) + "</b>: " + esc(a.summary) +
+          (a.tradeoffs ? ' <span class="hint">' + esc(a.tradeoffs) + "</span>" : "") + "</li>";
+      }).join("") + "</ul></div>" : "") +
+      '<div class="hint">' + when(d.created_at) + "</div></article>";
+  }
+  function otherAlts(list, P) {
+    var used = {};
+    P.decisions.forEach(function (d) { (d.rejects || []).forEach(function (id) { used[id] = 1; }); });
+    var rest = list.filter(function (a) { return !used[a.local_id]; });
+    if (!rest.length) return "";
+    return '<section><div class="sec-head"><h2>Alternatives not tied to a decision</h2></div><div class="list">' + rest.map(function (a) {
+      return '<div class="item" id="' + esc(a.local_id) + '"><div class="top"><code>' + esc(a.local_id) + "</code>" + pill(a.verdict) + "<b>" + esc(a.option) + '</b></div><div class="sub">' + esc(a.summary) + "</div></div>";
+    }).join("") + "</div></section>";
+  }
+  function questionList(qsList, P) {
+    if (!qsList.length) return '<div class="empty">No questions recorded.</div>';
+    return '<div class="list">' + qsList.map(function (x) {
+      return '<div class="item"><div class="top"><code>' + esc(x.local_id) + "</code>" + pill(x.status) + (x.spec_ref ? '<span class="hint">' + esc(x.spec_ref) + "</span>" : "") +
+        "</div><div>" + esc(x.question) + "</div>" +
+        (x.resolved_by ? '<div class="sub">resolved by ' + idLink(x.resolved_by, P) + (x.resolution ? ": " + esc(x.resolution) : "") + "</div>" : "") + "</div>";
+    }).join("") + "</div>";
+  }
+  function events(list) {
+    if (!list.length) return '<div class="empty">No events.</div>';
+    return '<div class="list feed">' + list.slice().reverse().map(function (e) {
+      return '<div class="item"><time>' + when(e.at) + '</time><div><span class="kind">' + esc(pad(e.seq)) + " · " + esc(e.kind) + "</span> " + esc(e.summary) + "</div></div>";
+    }).join("") + "</div>";
+  }
+
+  // ---------- views ----------
+  function overview(P) {
+    document.title = "stf · " + REPO;
+    var live = P.specs.filter(function (s) { return !s.moved; });
+    var liveSeqs = live.map(function (s) { return s.seq; });
+    // a moved spec's questions are answered in the repo it moved to (as in stf_status)
+    var open = P.questions.filter(function (x) { return x.status === "open" && (x.seq == null || liveSeqs.indexOf(x.seq) >= 0); });
+    var tasks = P.tasks.filter(function (t) { return liveSeqs.indexOf(t.seq) >= 0; });
+    var done = tasks.filter(function (t) { return t.status === "done"; }).length;
+    var blocked = tasks.filter(function (t) { return t.status === "blocked"; }).length;
+    var pend = P.handoffs.filter(function (h) { return h.status === "sent"; });
+    var factoryDecs = P.decisions.filter(function (d) { return d.seq == null; });
+    var html = '<div class="crumbs"><a href="' + esc(GH) + '">' + esc(REPO) + "</a> @ " + esc(REF) + "</div>" +
+      '<div class="stats">' +
+      '<div class="stat"><span class="n">' + live.length + '</span><span class="l">live specs</span></div>' +
+      '<div class="stat"><span class="n">' + done + "/" + tasks.length + '</span><span class="l">tasks done</span></div>' +
+      '<div class="stat' + (blocked ? " bad" : "") + '"><span class="n">' + blocked + '</span><span class="l">blocked</span></div>' +
+      '<div class="stat' + (open.length ? " warn" : "") + '"><span class="n">' + open.length + '</span><span class="l">open questions</span></div>' +
+      '<div class="stat"><span class="n">' + P.decisions.length + '</span><span class="l">decisions</span></div>' +
+      '<div class="stat' + (pend.length ? " warn" : "") + '"><span class="n">' + pend.length + '</span><span class="l">pending handoffs</span></div></div>';
+    html += '<section><div class="sec-head"><h2>Specs</h2><span class="hint">click a spec for its tasks, decisions and documents</span></div><div class="specs">' +
+      (P.specs.length ? P.specs.map(function (s) {
+        var ts = P.tasks.filter(function (t) { return t.seq === s.seq; });
+        var oq = s.moved ? "—" : P.questions.filter(function (x) { return x.seq === s.seq && x.status === "open"; }).length;
+        var moved = s.moved ? '<div class="hint">moved to <b>' + esc(s.moved.repo) + "</b> (" + esc(s.moved.decision || "") + ")</div>" : "";
+        return '<a class="spec' + (s.moved ? " moved" : "") + '" href="' + esc(route("/spec/" + pad(s.seq))) + '"><div><div class="id">' + pad(s.seq) + " · " + esc(s.slug) +
+          '</div><div class="t">' + esc(s.title) + "</div>" + moved + "</div>" + track(s) +
+          '<div class="meta"><div><span class="k">tasks</span><span>' + ts.filter(function (t) { return t.status === "done"; }).length + "/" + ts.length + " done</span></div>" + taskBar(ts) +
+          '<div><span class="k">open questions</span><span>' + oq + "</span></div>" +
+          (s.health ? '<div><span class="k">health</span><span>' + esc(s.health.score) + "</span></div>" : "") + "</div></a>";
+      }).join("") : '<div class="empty">No specs yet.</div>') + "</div></section>";
+    html += '<div class="grid2"><section><div class="sec-head"><h2>Open questions</h2></div>' + questionList(open, P) + "</section>" +
+      '<section><div class="sec-head"><h2>Pending handoffs</h2></div>' + (pend.length ? '<div class="list">' + pend.map(function (h) {
+        return '<div class="item"><div class="top"><code>' + esc(h.local_id) + "</code>" + pill(h.status) + '<span class="mono">' + esc(h.invocation) + '</span></div><div class="sub">' +
+          esc(h.model_tier) + "/" + esc(h.effort) + (h.fresh_session ? " · needs a fresh session" : "") + " · " + when(h.created_at) + "</div></div>";
+      }).join("") + "</div>" : '<div class="empty">None.</div>') + "</section></div>";
+    if (factoryDecs.length) {
+      html += '<section><div class="sec-head"><h2>Factory decisions</h2><a class="hint" href="' + esc(route("/factory")) + '">all ' + factoryDecs.length + " with alternatives →</a></div><div class=\"list\">" +
+        factoryDecs.slice().reverse().map(function (d) {
+          return '<div class="item"><div class="top"><a href="' + esc(route("/factory/" + d.local_id)) + '"><code>' + esc(d.local_id) + "</code></a>" + pill(d.status) + "<b>" + esc(d.title) + "</b></div></div>";
+        }).join("") + "</div></section>";
+    }
+    html += '<section><div class="sec-head"><h2>Recent events</h2></div>' + events(P.events.slice(-30)) + "</section>";
+    return html;
+  }
+
+  function factoryView(P) {
+    document.title = "stf · " + REPO + " · factory decisions";
+    var decs = P.decisions.filter(function (d) { return d.seq == null; });
+    return '<div class="crumbs"><a href="' + esc(route("/")) + '">' + esc(REPO) + "</a> / factory</div>" +
+      '<section><div class="sec-head"><h2>Factory decisions</h2><span class="hint">decisions not tied to one spec</span></div>' +
+      (decs.length ? decs.map(function (d) { return decisionCard(d, P); }).join("") : '<div class="empty">None.</div>') + "</section>" +
+      otherAlts(P.alternatives.filter(function (a) { return a.seq == null; }), P) +
+      '<section><div class="sec-head"><h2>Questions</h2></div>' + questionList(P.questions.filter(function (x) { return x.seq == null; }), P) + "</section>";
+  }
+
+  function specView(P, seq, tab, anchor) {
+    var s = P.specs.filter(function (x) { return pad(x.seq) === seq; })[0];
+    if (!s) return '<div class="err">No spec ' + esc(seq) + " in " + esc(REPO) + ".</div>";
+    document.title = "stf · " + s.slug + " · " + REPO;
+    var dir = "specs/" + pad(s.seq) + "-" + s.slug + "/";
+    var ts = P.tasks.filter(function (t) { return t.seq === s.seq; });
+    var decs = P.decisions.filter(function (d) { return d.seq === s.seq; });
+    var qsList = P.questions.filter(function (x) { return x.seq === s.seq; });
+    var hashes = P.artefact_hashes.filter(function (h) { return h.seq === s.seq; });
+    var ev = P.evidence.filter(function (e) { return e.seq === s.seq; });
+    var docs = specDocs(s, dir);
+    var tabs = [["tasks", "Tasks", ts.length], ["decisions", "Decisions", decs.length], ["questions", "Questions", qsList.length], ["evidence", "Evidence", hashes.length + ev.length]];
+    tab = tab || "tasks";
+    var head = '<div class="crumbs"><a href="' + esc(route("/")) + '">' + esc(REPO) + "</a> / spec " + pad(s.seq) + "</div>" +
+      '<section><div class="eyebrow">' + pad(s.seq) + " · " + esc(s.slug) + " · next phase: " + esc(s.phase) + (s.gate ? " · gate set" : "") + "</div>" +
+      '<h1 style="font-size:26px">' + esc(s.title) + '</h1><p class="hint">' + esc(s.summary) + "</p>" +
+      (s.moved ? '<div class="note">This spec moved to <a href="' + esc("?" + new URLSearchParams({ repo: s.moved.repo, ref: "main" }).toString() + "#/spec/" + pad(s.moved.seq)) + '">' + esc(s.moved.repo) + "</a> (" + esc(s.moved.decision || "") + "). These records are history.</div>" : "") +
+      '<div style="margin-top:14px">' + track(s) + "</div></section>" +
+      '<nav class="tabs" aria-label="Spec sections">' + tabs.map(function (t) {
+        return '<a class="tab" href="' + esc(route("/spec/" + pad(s.seq) + "/" + t[0])) + '"' + (tab === t[0] ? ' aria-current="page"' : "") + ">" + t[1] + '<span class="c">' + t[2] + "</span></a>";
+      }).join("") + docs.map(function (d) {
+        return '<a class="tab" href="' + esc(route("/spec/" + pad(s.seq) + "/" + d.key)) + '"' + (tab === d.key ? ' aria-current="page"' : "") + ">" + esc(d.label) + "</a>";
+      }).join("") + "</nav>";
+    var body = "";
+    if (tab === "tasks") {
+      var phase = null;
+      body = ts.length ? '<div class="tbl"><table><thead><tr><th>Task</th><th>Status</th><th>Tier</th><th>Covers</th><th>Title and outcome</th></tr></thead><tbody>' + ts.map(function (t) {
+        var row = "";
+        if (t.phase !== phase) { phase = t.phase; row += '<tr class="phase"><td colspan="5">' + esc(phase) + "</td></tr>"; }
+        var more = [t.objective && "<b>objective</b> " + esc(t.objective), t.tests_command && "<b>tests</b> <code>" + esc(t.tests_command) + "</code>",
+          t.output && "<b>outcome</b> " + esc(t.output), t.blocked_reason && "<b>blocked</b> " + esc(t.blocked_reason)].filter(Boolean);
+        return row + '<tr><td class="mono">' + esc(t.local_id) + (t.parallel ? " [P]" : "") + "</td><td>" + pill(t.status) + '</td><td class="mono">' + esc(t.model_tier || "?") + "/" + esc(t.effort || "?") +
+          '</td><td class="mono">' + esc([t.story].concat(t.requirements || []).filter(Boolean).join(" ")) + "</td><td>" + esc(t.title) +
+          (more.length ? "<details><summary>details</summary><p>" + more.join("<br>") + "</p></details>" : "") + "</td></tr>";
+      }).join("") + "</tbody></table></div>" : '<div class="empty">No tasks yet: the spec is at ' + esc(s.phase) + ".</div>";
+    } else if (tab === "decisions") {
+      body = (decs.length ? decs.map(function (d) { return decisionCard(d, P); }).join("") : '<div class="empty">No decisions yet.</div>') +
+        otherAlts(P.alternatives.filter(function (a) { return a.seq === s.seq; }), P);
+    } else if (tab === "questions") {
+      body = questionList(qsList, P);
+    } else if (tab === "evidence") {
+      body = '<section><div class="sec-head"><h2>Artefact hashes</h2><span class="hint">sha256 recorded when each task was closed; <code>stf verify</code> re-checks them</span></div>' +
+        (hashes.length ? '<div class="tbl"><table><thead><tr><th>Task</th><th>File</th><th>sha256</th><th>Recorded</th></tr></thead><tbody>' + hashes.map(function (h) {
+          return '<tr><td class="mono">' + esc(h.local_id) + '</td><td class="mono"><a href="' + esc(GH + "/blob/" + REF + "/" + h.path) + '">' + esc(h.path) + '</a></td><td class="mono" title="' + esc(h.sha256) + '">' + esc(String(h.sha256).slice(0, 12)) + "…</td><td class=\"mono\">" + when(h.recorded_at) + "</td></tr>";
+        }).join("") + "</tbody></table></div>" : '<div class="empty">No task has been closed yet.</div>') + "</section>" +
+        '<section><div class="sec-head"><h2>Evidence</h2></div>' + (ev.length ? '<div class="list">' + ev.map(function (e) {
+          return '<div class="item"><div class="top"><code>' + esc(e.local_id) + "</code><b>" + esc(e.claim) + '</b></div><div class="sub">' + esc(e.source) + " → " + linkIds(e.evidences, P) + (e.detail ? " · " + esc(e.detail) : "") + "</div></div>";
+        }).join("") + "</div>" : '<div class="empty">None.</div>') + "</section>";
+    } else {
+      var doc = docs.filter(function (d) { return d.key === tab; })[0];
+      if (!doc) return head + '<div class="err">Unknown section.</div>';
+      body = '<div class="doc" id="doc"><p class="loading">Loading ' + esc(doc.path) + "…</p></div>";
+      setTimeout(function () { renderDoc(doc); }, 0);
+    }
+    if (anchor) setTimeout(function () { var el = document.getElementById(anchor); if (el) el.scrollIntoView(); }, 0);
+    return head + body;
+  }
+
+  /** The documents a spec has: what its phases recorded (with their sha256), spec.md, and the analysis report. */
+  function specDocs(s, dir) {
+    var byPath = {};
+    // in lifecycle order, so a later phase's hash wins (the export sorts its keys alphabetically)
+    PHASES.forEach(function (phase) {
+      var rec = (s.artefacts || {})[phase] || {};
+      Object.keys(rec).forEach(function (path) { byPath[path] = { phase: phase, sha256: rec[path] }; });
+    });
+    if (!byPath[dir + "spec.md"]) byPath[dir + "spec.md"] = {};
+    if (s.health && s.health.report) {
+      var rep = String(s.health.report);
+      var path = rep.indexOf("specs/") === 0 ? rep : dir + rep.replace(/^.*?(analysis\/)/, "$1");
+      if (!byPath[path]) byPath[path] = { label: "Analysis" };
+    }
+    return Object.keys(byPath).map(function (path) {
+      var file = path.slice(path.lastIndexOf("/") + 1);
+      var r = byPath[path];
+      return { key: file.replace(/\.md$/, "").replace(/[^\w-]/g, "-"), label: r.label || DOC_LABELS[file] || file, path: path, phase: r.phase, sha256: r.sha256,
+        editing: PHASE_FILE[s.phase] && path === dir + PHASE_FILE[s.phase] ? s.phase : null };
+    }).sort(function (a, b) {
+      var ia = DOC_ORDER.indexOf(a.path.slice(a.path.lastIndexOf("/") + 1)), ib = DOC_ORDER.indexOf(b.path.slice(b.path.lastIndexOf("/") + 1));
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.path.localeCompare(b.path);
+    });
+  }
+
+  function sha256hex(buf) {
+    if (!(window.crypto && crypto.subtle)) return Promise.resolve(null);
+    return crypto.subtle.digest("SHA-256", buf).then(function (d) {
+      return Array.prototype.map.call(new Uint8Array(d), function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+    });
+  }
+
+  function renderDoc(doc) {
+    var box = document.getElementById("doc");
+    var dir = doc.path.slice(0, doc.path.lastIndexOf("/") + 1);
+    fetch(RAW + doc.path, { cache: "no-cache" }).then(function (r) {
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error(doc.path + ": HTTP " + r.status);
+      return r.arrayBuffer();
+    }).then(function (buf) {
+      if (!box.isConnected) return;
+      if (buf == null) { box.innerHTML = '<p class="empty">' + esc(doc.path) + " isn't in the repo at " + esc(REF) + ".</p>"; return; }
+      var md = new TextDecoder().decode(buf);
+      // as in the plane's lifecycleHash: tasks.md is hashed with its markers normalised, because the plane rewrites them
+      var hashed = /\/tasks\.md$/.test(doc.path) ? new TextEncoder().encode(md.replace(/^- \[[ xX!~-]\]/gm, "- [ ]")) : buf;
+      return sha256hex(hashed).then(function (hex) {
+        // the same check `stf verify` makes: does the file still have the hash its phase recorded?
+        var check = !doc.sha256 || hex == null ? "" : hex === doc.sha256
+          ? ' · <span class="pill s-verified">matches the hash recorded at ' + esc(doc.phase) + "</span>"
+          : doc.editing
+            ? ' · <span class="pill s-in_progress" title="recorded ' + esc(doc.sha256) + '">being edited in ' + esc(doc.editing) + "</span>"
+            : ' · <span class="pill s-blocked" title="recorded ' + esc(doc.sha256) + '">changed since ' + esc(doc.phase) + " without stf_reopen_phase</span>";
+        var html = DOMPurify.sanitize(marked.parse(md), { USE_PROFILES: { html: true } });
+        box.innerHTML = '<p class="hint"><a href="' + esc(GH + "/blob/" + REF + "/" + doc.path) + '">' + esc(doc.path) + "</a> on GitHub" + check + "</p>" + html;
+        // relative links in the document point at the repo, not at this page
+        box.querySelectorAll("a[href]").forEach(function (a) {
+          var h = a.getAttribute("href");
+          if (/^(https?:|mailto:|#)/.test(h)) return;
+          a.href = new URL(h, GH + "/blob/" + REF + "/" + dir).href;
+        });
+      });
+    }).catch(function (e) { box.innerHTML = '<div class="err">' + esc(e.message) + "</div>"; });
+  }
+
+  // ---------- routing: #/ · #/factory[/D-NNN] · #/spec/NNN[/tab[/anchor]] ----------
+  var plane = null;
+  function render() {
+    var app = document.getElementById("app");
+    var parts = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
+    var html;
+    if (parts[0] === "spec" && parts[1]) html = specView(plane, parts[1], parts[2], parts[3]);
+    else if (parts[0] === "factory") {
+      html = factoryView(plane);
+      if (parts[1]) setTimeout(function () { var el = document.getElementById(parts[1]); if (el) el.scrollIntoView(); }, 0);
+    } else html = overview(plane);
+    app.innerHTML = html;
+    document.getElementById("title").textContent = REPO.split("/")[1];
+    if (!parts[3] && !(parts[0] === "factory" && parts[1])) window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", render);
+  load().then(function (P) { plane = P; render(); }).catch(function (e) {
+    document.getElementById("app").innerHTML = '<div class="err"><b>Couldn\'t load the plane.</b><br>' + esc(e.message) + "</div>";
+  });
+})();
+</script>
+</body>
+</html>
