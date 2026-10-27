@@ -62,7 +62,7 @@ task's tier, stop and ask. If it is above, note it and proceed.
 
 ```
 make setup      # npm ci, build the plane, install the gitleaks pre-commit hook (core.hooksPath=.githooks)
-claude plugin install stf@secops-task-factory --scope project   # once per machine (needs gh auth: the repo is private)
+claude plugin install stf@secops-task-factory --scope project   # once per machine
 make test       # vitest: unit + MCP contract
 make verify     # evidence re-check across all specs
 make dashboard  # read-only HTML view of the plane → .stf/dashboard.html (any repo: `stf dashboard`)

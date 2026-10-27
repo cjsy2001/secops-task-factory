@@ -50,7 +50,7 @@ _Live status: `make status` (JSON) or `make dashboard` (an HTML page in `.stf/da
 
 ```bash
 make setup     # npm ci, build the plane, enable the gitleaks pre-commit hook
-claude plugin install stf@secops-task-factory --scope project   # once per machine; the repo is private, so gh auth first
+claude plugin install stf@secops-task-factory --scope project   # once per machine
 claude         # trust the folder; the recall block appears at session start
 /stf:status
 /stf:spec-lifecycle clarify 1
@@ -58,3 +58,19 @@ claude         # trust the folder; the recall block appears at session start
 
 Requirements: Node ≥ 20 and Docker (for gitleaks when the binary is missing). Each project's own toolchain
 (Terraform ≥ 1.6, Azure CLI, Python ≥ 3.11) is installed by that spec's Setup tasks.
+
+## Use stf in your own repo
+
+stf is a Claude Code plugin that works in any git repo:
+
+```bash
+claude plugin marketplace add cjsy2001/secops-task-factory
+claude plugin install stf@secops-task-factory
+```
+
+Then `/stf:new-project` scaffolds a new repo, or `! stf init` adds a plane to an existing one. The full guide, with
+a worked example from spec to implementation, is in [docs/using-stf.md](docs/using-stf.md).
+
+## License
+
+[MIT](LICENSE)
