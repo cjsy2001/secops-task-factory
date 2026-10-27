@@ -10,7 +10,7 @@ change still goes through the `stf_*` tools.
 
 | Page | Built by | Local file (gitignored) | `.stf/pages.json` key |
 |---|---|---|---|
-| Hub `STF · <repo>`: totals, a card per spec, links to every page | `stf hub` | `.stf/hub.html` | `hub` |
+| Hub `STF · <repo>`: totals, a card per spec, factory decisions, links to every page | `stf hub` | `.stf/hub.html` | `hub` |
 | Plane dashboard `STF · <repo> dashboard` | `stf dashboard` | `.stf/dashboard.html` | `dashboard` |
 | Spec page `STF · Spec NNN <slug>`: spec/plan/research/tasks, trace markers, decisions | `stf spec-page N` | `.stf/spec-page-NNN.html` | `specs."N"` |
 

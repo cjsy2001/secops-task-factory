@@ -16,6 +16,60 @@ function link(url: string | undefined, label: string): string {
   return `<a class="open" href="${esc(url)}" target="_blank" rel="noopener">${esc(label)} <span aria-hidden="true">↗</span></a>`;
 }
 
+/**
+ * Decisions not tied to a spec (seq null), newest first. Supersedes and corrects are shown both ways; a record on the
+ * hub is linked, one elsewhere is named. Superseded decisions stay listed, dimmed, so links to them still land.
+ */
+function factoryDecisions(data: DashboardData): string {
+  const all = data.decisions as Row[];
+  const decisions = all.filter((d) => d.seq == null).sort((a, b) => String(b.local_id).localeCompare(String(a.local_id)));
+  const alts = new Map((data.alternatives as Row[]).filter((a) => a.seq == null).map((a) => [String(a.local_id), a]));
+  const onHub = new Set(decisions.map((d) => String(d.local_id)));
+  const ref = (id: string) => (onHub.has(id) ? `<a href="#${esc(id.toLowerCase())}">${esc(id)}</a>` : esc(id));
+  const inverse = (key: string) => {
+    const m = new Map<string, string[]>();
+    for (const d of all) for (const id of (d[key] ?? []) as string[]) m.set(id, [...(m.get(id) ?? []), String(d.local_id)]);
+    return m;
+  };
+  const supersededBy = inverse("supersedes");
+  const correctedBy = inverse("corrects");
+  return decisions
+    .map((d) => {
+      const id = String(d.local_id);
+      const rel = (
+        [
+          ["supersedes", (d.supersedes ?? []) as string[]],
+          ["superseded by", supersededBy.get(id) ?? []],
+          ["corrects", (d.corrects ?? []) as string[]],
+          ["corrected by", correctedBy.get(id) ?? []],
+          ["resolves", (d.resolves ?? []) as string[]],
+        ] as [string, string[]][]
+      )
+        .filter(([, ids]) => ids.length)
+        .map(([label, ids]) => `${label} ${ids.map(ref).join(", ")}`)
+        .join(" · ");
+      const rejected = ((d.rejects ?? []) as string[]).map(
+        (a) => `<li><b>${esc(a)}</b> ${esc(alts.get(a)?.option ?? "")}</li>`,
+      );
+      const why =
+        `<details><summary>Why${rejected.length ? ` · ${rejected.length} rejected` : ""}</summary>` +
+        `<p>${esc(d.rationale)}</p>` +
+        (d.consequences ? `<p><b>Consequences</b> ${esc(d.consequences)}</p>` : "") +
+        (rejected.length ? `<ul class="alts">${rejected.join("")}</ul>` : "") +
+        "</details>";
+      return (
+        `<article class="decision s-${esc(d.status)}" id="${esc(id.toLowerCase())}">` +
+        `<header><span class="did">${esc(id)}</span><h3>${esc(d.title)}</h3>` +
+        `<span class="pill pill-${esc(d.status)}">${esc(d.status)}</span></header>` +
+        `<p class="statement">${esc(d.statement)}</p>` +
+        (rel ? `<p class="rel">${rel}</p>` : "") +
+        why +
+        "</article>"
+      );
+    })
+    .join("");
+}
+
 /** The hub: plane totals, a card per spec, and a link to every status page recorded in .stf/pages.json. Reads only. */
 export function renderHub(f: Factory, pages: Pages = readPages(f.root), data: DashboardData = dashboardData(f), built = new Date()): string {
   const specs = [...(data.specs as Row[])].sort((a, b) => a.seq - b.seq);
@@ -90,6 +144,7 @@ export function renderHub(f: Factory, pages: Pages = readPages(f.root), data: Da
     // plane-derived content last, so its text is never treated as a placeholder
     ["{{EVENTS}}", recent || '<li class="empty">No events yet.</li>'],
     ["{{SPECS}}", rows.join("") || '<p class="empty">No specs chartered yet.</p>'],
+    ["{{DECISIONS}}", factoryDecisions(data) || '<p class="empty">No factory decisions yet. <code>/stf:decide</code> records one.</p>'],
   ] as const)
     page = fill(page, k, v);
   return page;
