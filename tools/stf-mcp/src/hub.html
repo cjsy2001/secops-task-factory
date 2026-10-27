@@ -69,6 +69,27 @@ a.open:hover { background: var(--accent-soft); }
 a.open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .nolink { font: 400 13px/1 var(--mono); color: var(--muted); }
 
+.intro { margin: -4px 0 12px; font-size: 13.5px; color: var(--muted); }
+.decisions { display: grid; gap: 10px; }
+.decision { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; display: grid; gap: 6px; scroll-margin-top: 16px; }
+.decision header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.decision h3 { font: 600 16px/1.3 var(--cond); margin: 0; flex: 1 1 240px; }
+.decision p { margin: 0; font-size: 14px; }
+.decision.s-superseded { background: var(--bg); }
+.decision.s-superseded h3, .decision.s-superseded .statement { color: var(--muted); }
+.did { font: 500 13px/1 var(--mono); color: var(--pass); }
+.rel { color: var(--muted); font: 400 12.5px/1.5 var(--mono) !important; }
+.rel a { color: var(--accent); }
+.decision details { font-size: 13.5px; color: var(--muted); }
+.decision summary { cursor: pointer; font: 500 12.5px/1.6 var(--mono); color: var(--accent); width: fit-content; }
+.decision details p { margin-top: 6px; font-size: 13.5px; }
+.decision details b { color: var(--ink); font-weight: 600; }
+.alts { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 2px; }
+.alts b { font: 500 12px/1 var(--mono) !important; color: var(--muted) !important; margin-right: 4px; }
+.pill { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; padding: 4px 7px; border-radius: 999px; background: var(--code-bg); color: var(--muted); }
+.pill-accepted { background: var(--pass-soft); color: var(--pass); }
+:target { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 .feed { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
 .feed li { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 4px 12px; padding: 9px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
 .feed li:last-child { border-bottom: 0; }
@@ -102,6 +123,12 @@ a.open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <h2>Spec pages</h2>
       <div class="specs">{{SPECS}}</div>
     </div>
+  </section>
+
+  <section aria-label="Factory decisions">
+    <h2>Factory decisions</h2>
+    <p class="intro">Decisions that apply to the whole repo rather than one spec. Each spec's own decisions are on its spec page.</p>
+    <div class="decisions">{{DECISIONS}}</div>
   </section>
 
   <section aria-label="Recent plane events">

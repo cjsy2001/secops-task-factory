@@ -131,6 +131,24 @@ describe("hub", () => {
     expect(html).toContain("next phase: <b>specify</b>");
     expect(html).toContain("chartered: Demo pipeline");
   });
+
+  it("lists factory decisions with their links both ways, and leaves spec decisions to the spec page", () => {
+    const { f, seq } = specWithDocs();
+    expect(renderHub(f, {})).toContain("No factory decisions yet.");
+    const alt = f.captureAlternative({ option: "GHCR <script>", summary: "x", verdict: "rejected" });
+    const old = f.captureDecision({ title: "Old <b>way</b>", statement: "s", rationale: "costs $&", rejects: [alt.local_id] });
+    const now = f.captureDecision({ title: "New way", statement: "s", rationale: "r", supersedes: [old.local_id] });
+    f.captureDecision({ seq, title: "Spec-only choice", statement: "s", rationale: "r" });
+    const html = renderHub(f, {});
+    expect(html).toContain("Old &lt;b&gt;way&lt;/b&gt;");
+    expect(html).toContain("costs $&amp;");
+    expect(html).toContain(`<li><b>${alt.local_id}</b> GHCR &lt;script&gt;</li>`);
+    expect(html).toContain(`supersedes <a href="#${old.local_id.toLowerCase()}">${old.local_id}</a>`);
+    expect(html).toContain(`superseded by <a href="#${now.local_id.toLowerCase()}">${now.local_id}</a>`);
+    expect(html).toContain(`class="decision s-superseded" id="${old.local_id.toLowerCase()}"`);
+    expect(html.indexOf(now.local_id)).toBeLessThan(html.indexOf(`id="${old.local_id.toLowerCase()}"`));
+    expect(html.split('aria-label="Factory decisions"')[1]!.split("</section>")[0]).not.toContain("Spec-only choice");
+  });
 });
 
 describe("dashboard title", () => {
