@@ -94,4 +94,7 @@ make plugin-validate  # claude plugin validate on the plugin and the marketplace
 - 003 `malware-sandbox`: an isolated behavioural-analysis sandbox with JSON verdicts. **Benign samples only.**
 - 004 `zero-trust-audit`: an Azure misconfiguration and identity auditor with webhook alerts.
 
+Projects scaffolded with `stf new-project`. Each one has its own repo and plane, and no spec here:
+- `ctf-writeups` (`cjsy2001/ctf-writeups`): a CTF learning path from picoCTF to HTB Starting Point to TryHackMe, with a writeup per challenge. **Flags redacted.**
+
 Rules per concern live in `.claude/rules/` (factory, security, azure).
