@@ -50,7 +50,11 @@ button,.btn{font-family:var(--mono);font-size:12.5px;border:1px solid var(--rule
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 button:focus-visible,.btn:focus-visible,.tab:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 code{font-family:var(--mono);font-size:.88em;background:var(--sunk);padding:1px 5px;border-radius:4px}
-.crumbs{font-family:var(--mono);font-size:12.5px;margin-top:16px;color:var(--muted)}
+.crumbs{font-family:var(--mono);font-size:12.5px;margin-top:16px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.back{font-weight:500}
+.back:hover{border-color:var(--accent);color:var(--accent)}
+h1 a{color:inherit;text-decoration:none}
+h1 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-block:20px}
 .stat{background:var(--surface);padding:14px 16px;display:grid;gap:2px}
 .stat .n{font-family:var(--display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -131,7 +135,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
 <header>
   <div>
     <div class="eyebrow">stf plane · live, read-only</div>
-    <h1 id="title">stf plane viewer</h1>
+    <h1><a id="title" href="#/" title="Back to the overview">stf plane viewer</a></h1>
   </div>
   <form class="repo" id="repo-form" aria-label="Choose a repository">
     <input name="repo" aria-label="Repository (owner/name)" placeholder="owner/name" spellcheck="false" autocomplete="off">
@@ -301,6 +305,12 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
     }).join("") + "</div>";
   }
 
+  /** The back button and the path for a view below the overview. */
+  function crumbs(here) {
+    return '<nav class="crumbs" aria-label="Breadcrumb"><a class="btn back" href="' + esc(route("/")) + '">← All specs</a>' +
+      '<span><a href="' + esc(route("/")) + '">' + esc(REPO) + "</a> / " + esc(here) + "</span></nav>";
+  }
+
   // ---------- views ----------
   function overview(P) {
     document.title = "stf · " + REPO;
@@ -350,7 +360,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
   function factoryView(P) {
     document.title = "stf · " + REPO + " · factory decisions";
     var decs = P.decisions.filter(function (d) { return d.seq == null; });
-    return '<div class="crumbs"><a href="' + esc(route("/")) + '">' + esc(REPO) + "</a> / factory</div>" +
+    return crumbs("factory") +
       '<section><div class="sec-head"><h2>Factory decisions</h2><span class="hint">decisions not tied to one spec</span></div>' +
       (decs.length ? decs.map(function (d) { return decisionCard(d, P); }).join("") : '<div class="empty">None.</div>') + "</section>" +
       otherAlts(P.alternatives.filter(function (a) { return a.seq == null; }), P) +
@@ -359,7 +369,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
 
   function specView(P, seq, tab, anchor) {
     var s = P.specs.filter(function (x) { return pad(x.seq) === seq; })[0];
-    if (!s) return '<div class="err">No spec ' + esc(seq) + " in " + esc(REPO) + ".</div>";
+    if (!s) return crumbs("spec " + seq) + '<div class="err">No spec ' + esc(seq) + " in " + esc(REPO) + ".</div>";
     document.title = "stf · " + s.slug + " · " + REPO;
     var dir = "specs/" + pad(s.seq) + "-" + s.slug + "/";
     var ts = P.tasks.filter(function (t) { return t.seq === s.seq; });
@@ -370,7 +380,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-si
     var docs = specDocs(s, dir);
     var tabs = [["tasks", "Tasks", ts.length], ["decisions", "Decisions", decs.length], ["questions", "Questions", qsList.length], ["evidence", "Evidence", hashes.length + ev.length]];
     tab = tab || "tasks";
-    var head = '<div class="crumbs"><a href="' + esc(route("/")) + '">' + esc(REPO) + "</a> / spec " + pad(s.seq) + "</div>" +
+    var head = crumbs("spec " + pad(s.seq)) +
       '<section><div class="eyebrow">' + pad(s.seq) + " · " + esc(s.slug) + " · next phase: " + esc(s.phase) + (s.gate ? " · gate set" : "") + "</div>" +
       '<h1 style="font-size:26px">' + esc(s.title) + '</h1><p class="hint">' + esc(s.summary) + "</p>" +
       (s.moved ? '<div class="note">This spec moved to <a href="' + esc("?" + new URLSearchParams({ repo: s.moved.repo, ref: "main" }).toString() + "#/spec/" + pad(s.moved.seq)) + '">' + esc(s.moved.repo) + "</a> (" + esc(s.moved.decision || "") + "). These records are history.</div>" : "") +
