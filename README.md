@@ -1,14 +1,23 @@
 # secops-task-factory
 
-Four hands-on security engineering projects, built through a **spec-driven task factory** that keeps
-AI-assisted development honest: every claim of "done" must carry verifiable evidence.
+**stf** is a spec-driven task factory for Claude Code. It keeps AI-assisted development honest: every claim of
+"done" must carry verifiable evidence. It ships as a Claude Code plugin that works in any git repo. To use it in
+yours, see [docs/using-stf.md](docs/using-stf.md).
 
-| # | Project | Stack | Status |
+This repo holds the plugin (`tools/stf-mcp/`), the factory's own plane, and the specs of a security portfolio
+built with it.
+
+## Projects built with stf
+
+Each project gets its own repo and plane once it moves out of this one (D-004).
+
+| Project | Stack | Where | Status |
 |---|---|---|---|
-| 001 | [DevSecOps CI/CD pipeline with security gates](specs/001-devsecops-pipeline/spec.md) | GitHub Actions · Gitleaks/TruffleHog · Semgrep · Trivy · Dependabot · OIDC → Azure | spec: clarify |
-| 002 | [Self-healing hardened server IaC](specs/002-hardened-iac/spec.md) | Terraform · Ansible · Fail2ban/ufw · Docker (non-root) · Cowrie · VMSS auto-repair | spec: clarify |
-| 003 | [Malware analysis sandbox](specs/003-malware-sandbox/spec.md) | Docker isolation · Python · auditd/eBPF · YARA · JSON verdicts (benign samples only) | spec: clarify |
-| 004 | [Zero-trust cloud audit tool](specs/004-zero-trust-audit/spec.md) | Python · Azure SDK · Microsoft Graph · Event Grid · Functions · webhooks | spec: clarify |
+| DevSecOps CI/CD pipeline with security gates | GitHub Actions · Gitleaks/TruffleHog · Semgrep · Trivy · Dependabot · OIDC → Azure | [cjsy2001/devsecops-pipeline](https://github.com/cjsy2001/devsecops-pipeline) | own repo; [spec 001 here](specs/001-devsecops-pipeline/spec.md) is history |
+| CTF learning path and writeups | picoCTF → HTB Starting Point → TryHackMe · writeups with flags redacted | [cjsy2001/ctf-writeups](https://github.com/cjsy2001/ctf-writeups) | own repo; spec: specify |
+| Self-healing hardened server IaC | Terraform · Ansible · Fail2ban/ufw · Docker (non-root) · Cowrie · VMSS auto-repair | [specs/002-hardened-iac](specs/002-hardened-iac/spec.md) | spec: clarify |
+| Malware analysis sandbox | Docker isolation · Python · auditd/eBPF · YARA · JSON verdicts (benign samples only) | [specs/003-malware-sandbox](specs/003-malware-sandbox/spec.md) | spec: clarify |
+| Zero-trust cloud audit tool | Python · Azure SDK · Microsoft Graph · Event Grid · Functions · webhooks | [specs/004-zero-trust-audit](specs/004-zero-trust-audit/spec.md) | spec: clarify |
 
 _Live status: `make status` (JSON) or `make dashboard` (an HTML page in `.stf/dashboard.html`); the table above is a snapshot._
 
