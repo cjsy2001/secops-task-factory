@@ -97,5 +97,6 @@ make plugin-validate  # claude plugin validate on the plugin and the marketplace
 
 Projects scaffolded with `stf new-project`. Each one has its own repo and plane, and no spec here:
 - `ctf-writeups` (`cjsy2001/ctf-writeups`): a CTF learning path from picoCTF to HTB Starting Point to TryHackMe, with a writeup per challenge. **Flags redacted.**
+- `llm-landing-lab` (`cjsy2001/llm-landing-lab`): a demo-to-production LLM app, an HR assistant built on the perceive-reason-remember-act architecture that grows from basic RAG to Agentic RAG, on Azure.
 
 Rules per concern live in `.claude/rules/` (factory, security, azure).
